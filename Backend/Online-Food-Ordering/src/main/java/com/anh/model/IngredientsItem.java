@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class IngredientsItem {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -24,5 +24,5 @@ public class IngredientsItem {
     @ManyToOne
     private Restaurant restaurant;
 
-    private boolean inStrock = true;
+    private boolean inStock = true;
 }
