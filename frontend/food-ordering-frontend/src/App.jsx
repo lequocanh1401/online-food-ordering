@@ -1,16 +1,23 @@
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/Navbar/Navbar';
-// import { Home } from './components/Home/Home';
-// import { RestaurantDetails } from './components/Restaurant/RestaurantDetails';
+import { Home } from './components/Home/Home';
+import { RestaurantDetails } from './components/Restaurant/RestaurantDetails';
 import { Cart } from './components/Cart/Cart';
+import { Profile } from './components/Profile/Profile';
 
 function App() {
   return (
-    <div className='bg-gray-900 min-h-screen text-white'>
-      <Navbar />
-
-      {/* Hiển thị trang Giỏ hàng lên để ngắm */}
-      <Cart />
-    </div>
+    <BrowserRouter>
+      <div className='bg-gray-900 min-h-screen text-white'>
+        <Navbar />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetails />} />
+          <Route path='/cart' element={<Cart />} />
+          <Route path='/my-profile/*' element={<Profile />} />
+        </Routes>
+      </div>
+    </BrowserRouter>
   )
 }
 
