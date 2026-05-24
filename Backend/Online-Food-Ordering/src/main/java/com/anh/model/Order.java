@@ -37,5 +37,5 @@ public class Order {
 
     // payment logic có thể thêm sau theo video
     private int totalItem;
-    private int totalPrice;
+    private Long totalPrice;
 }
