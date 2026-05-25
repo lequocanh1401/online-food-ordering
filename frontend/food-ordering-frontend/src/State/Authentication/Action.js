@@ -7,15 +7,12 @@ import {
     REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS
 } from "./ActionType";
 
-// 1. Hàm Đăng ký
 export const registerUser = (reqData) => async (dispatch) => {
     dispatch({ type: REGISTER_REQUEST });
     try {
         const { data } = await axios.post(`${API_URL}/auth/signup`, reqData.userData);
-        // Nếu thành công, lưu thẻ JWT vào bộ nhớ trình duyệt
         if (data.jwt) localStorage.setItem("jwt", data.jwt);
 
-        // Chuyển hướng dựa vào Role (Vai trò)
         if (data.role === "ROLE_RESTAURANT_OWNER") {
             reqData.navigate("/admin/restaurant");
         } else {
@@ -24,12 +21,13 @@ export const registerUser = (reqData) => async (dispatch) => {
         dispatch({ type: REGISTER_SUCCESS, payload: data.jwt });
         console.log("Đăng ký thành công", data);
     } catch (error) {
-        dispatch({ type: REGISTER_FAILURE, payload: error });
-        console.log("Lỗi đăng ký", error);
+        // Chỉ gửi chuỗi text báo lỗi, ngăn Redux bị nghẹn
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: REGISTER_FAILURE, payload: errorMessage });
+        console.log("Lỗi đăng ký", errorMessage);
     }
 };
 
-// 2. Hàm Đăng nhập
 export const loginUser = (reqData) => async (dispatch) => {
     dispatch({ type: LOGIN_REQUEST });
     try {
@@ -44,12 +42,12 @@ export const loginUser = (reqData) => async (dispatch) => {
         dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });
         console.log("Đăng nhập thành công", data);
     } catch (error) {
-        dispatch({ type: LOGIN_FAILURE, payload: error });
-        console.log("Lỗi đăng nhập", error);
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: LOGIN_FAILURE, payload: errorMessage });
+        console.log("Lỗi đăng nhập", errorMessage);
     }
 };
 
-// 3. Hàm Lấy thông tin User từ JWT
 export const getUser = (jwt) => async (dispatch) => {
     dispatch({ type: GET_USER_REQUEST });
     try {
@@ -61,12 +59,12 @@ export const getUser = (jwt) => async (dispatch) => {
         dispatch({ type: GET_USER_SUCCESS, payload: data });
         console.log("Lấy Profile thành công", data);
     } catch (error) {
-        dispatch({ type: GET_USER_FAILURE, payload: error });
-        console.log("Lỗi lấy Profile", error);
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: GET_USER_FAILURE, payload: errorMessage });
+        console.log("Lỗi lấy Profile", errorMessage);
     }
 };
 
-// 4. Hàm Đăng xuất
 export const logout = () => async (dispatch) => {
     try {
         localStorage.clear();

@@ -3,22 +3,23 @@ import { Typography, TextField, Button } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../../State/Authentication/Action';
 
-const initialValues = {
-    email: "",
-    password: ""
-};
+const initialValues = { email: "", password: "" };
 
 const validationSchema = Yup.object().shape({
     email: Yup.string().email("Email không hợp lệ").required("Vui lòng nhập Email"),
-    password: Yup.string().min(6, "Mật khẩu phải từ 6 ký tự trở lên").required("Vui lòng nhập mật khẩu")
+    password: Yup.string().required("Vui lòng nhập mật khẩu")
 });
 
 export const LoginForm = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch(); // Khởi tạo người đưa thư của Redux
 
     const handleSubmit = (values) => {
-        console.log("Dữ liệu đăng nhập: ", values);
+        // Đóng gói dữ liệu và gửi đi bằng Redux
+        dispatch(loginUser({ userData: values, navigate }));
     };
 
     return (
@@ -29,25 +30,8 @@ export const LoginForm = () => {
             <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
                 {({ touched, errors }) => (
                     <Form className="space-y-4">
-                        <Field
-                            as={TextField}
-                            name="email"
-                            label="Email Address"
-                            fullWidth
-                            variant="outlined"
-                            error={touched.email && Boolean(errors.email)}
-                            helperText={<ErrorMessage name="email" />}
-                        />
-                        <Field
-                            as={TextField}
-                            name="password"
-                            label="Password"
-                            type="password"
-                            fullWidth
-                            variant="outlined"
-                            error={touched.password && Boolean(errors.password)}
-                            helperText={<ErrorMessage name="password" />}
-                        />
+                        <Field as={TextField} name="email" label="Email" fullWidth variant="outlined" error={touched.email && Boolean(errors.email)} helperText={<ErrorMessage name="email" />} />
+                        <Field as={TextField} name="password" label="Password" type="password" fullWidth variant="outlined" error={touched.password && Boolean(errors.password)} helperText={<ErrorMessage name="password" />} />
                         <Button fullWidth variant="contained" type="submit" color="primary" sx={{ py: 1.5 }}>
                             Đăng nhập
                         </Button>

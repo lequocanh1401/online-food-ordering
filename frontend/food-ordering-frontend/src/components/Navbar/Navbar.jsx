@@ -3,13 +3,25 @@ import { IconButton, Avatar, Badge } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 
 export const Navbar = () => {
     const navigate = useNavigate();
+    // Lấy dữ liệu user từ kho Redux
+    const { auth } = useSelector(store => store);
+
+    const handleAvatarClick = () => {
+        if (auth.user?.role === "ROLE_CUSTOMER") {
+            navigate("/my-profile");
+        } else if (auth.user?.role === "ROLE_RESTAURANT_OWNER") {
+            navigate("/admin/restaurant");
+        } else {
+            navigate("/account/login");
+        }
+    };
 
     return (
         <div className='px-5 z-50 py-[.8rem] bg-[#e91e63] lg:px-20 flex justify-between items-center'>
-            {/* Cụm Logo bên trái */}
             <div className='flex items-center space-x-4'>
                 <div onClick={() => navigate("/")} className='lg:mr-10 cursor-pointer flex items-center space-x-4'>
                     <li className='font-semibold text-white text-2xl list-none'>
@@ -18,7 +30,6 @@ export const Navbar = () => {
                 </div>
             </div>
 
-            {/* Cụm Icon bên phải */}
             <div className='flex items-center space-x-2 lg:space-x-10'>
                 <div>
                     <IconButton>
@@ -26,13 +37,13 @@ export const Navbar = () => {
                     </IconButton>
                 </div>
 
-                {/* Click vào Avatar để bật trang Login */}
                 <div className='cursor-pointer'>
                     <Avatar
-                        onClick={() => navigate("/account/login")}
+                        onClick={handleAvatarClick}
                         sx={{ bgcolor: "white", color: "#e91e63" }}
                     >
-                        QA
+                        {/* Nếu đăng nhập rồi thì hiện chữ cái đầu của tên, chưa thì hiện Icon hoặc rỗng */}
+                        {auth.user?.fullName ? auth.user.fullName[0].toUpperCase() : ""}
                     </Avatar>
                 </div>
 

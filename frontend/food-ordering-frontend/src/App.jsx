@@ -5,8 +5,23 @@ import { RestaurantDetails } from './components/Restaurant/RestaurantDetails';
 import { Cart } from './components/Cart/Cart';
 import { Profile } from './components/Profile/Profile';
 import { AuthModal } from './components/Auth/AuthModal';
+import { useDispatch, useSelector } from 'react-redux';
+import { useEffect } from 'react';
+import { getUser } from './State/Authentication/Action';
+import { findCart } from './State/Cart/Action';
 
 function App() {
+  const dispatch = useDispatch();
+  const jwt = localStorage.getItem("jwt");
+  const { auth } = useSelector(store => store); // Lấy kho auth ra để theo dõi
+
+  useEffect(() => {
+    if (jwt) {
+      dispatch(getUser(jwt));
+      dispatch(findCart(jwt)); // Sẵn tiện lấy luôn giỏ hàng của user đó
+    }
+  }, [auth.jwt, dispatch, jwt]); // Chạy lại khi token thay đổi
+
   return (
     <BrowserRouter>
       <div className='bg-gray-900 min-h-screen text-white'>
@@ -17,8 +32,6 @@ function App() {
           <Route path='/cart' element={<Cart />} />
           <Route path='/my-profile/*' element={<Profile />} />
         </Routes>
-
-        {/* Lắng nghe luồng đăng nhập toàn hệ thống */}
         <AuthModal />
       </div>
     </BrowserRouter>
