@@ -7,8 +7,8 @@ import { useSelector } from 'react-redux';
 
 export const Navbar = () => {
     const navigate = useNavigate();
-    // Lấy dữ liệu user từ kho Redux
-    const { auth } = useSelector(store => store);
+    // Sửa lỗi cảnh báo: Chỉ gọi đích danh ngăn auth
+    const auth = useSelector(store => store.auth);
 
     const handleAvatarClick = () => {
         if (auth.user?.role === "ROLE_CUSTOMER") {
@@ -42,7 +42,6 @@ export const Navbar = () => {
                         onClick={handleAvatarClick}
                         sx={{ bgcolor: "white", color: "#e91e63" }}
                     >
-                        {/* Nếu đăng nhập rồi thì hiện chữ cái đầu của tên, chưa thì hiện Icon hoặc rỗng */}
                         {auth.user?.fullName ? auth.user.fullName[0].toUpperCase() : ""}
                     </Avatar>
                 </div>

@@ -13,14 +13,16 @@ import { findCart } from './State/Cart/Action';
 function App() {
   const dispatch = useDispatch();
   const jwt = localStorage.getItem("jwt");
-  const { auth } = useSelector(store => store); // Lấy kho auth ra để theo dõi
+
+  // Sửa lỗi cảnh báo: Chỉ gọi đích danh ngăn auth
+  const auth = useSelector(store => store.auth);
 
   useEffect(() => {
     if (jwt) {
       dispatch(getUser(jwt));
-      dispatch(findCart(jwt)); // Sẵn tiện lấy luôn giỏ hàng của user đó
+      dispatch(findCart(jwt));
     }
-  }, [auth.jwt, dispatch, jwt]); // Chạy lại khi token thay đổi
+  }, [auth.jwt, dispatch, jwt]);
 
   return (
     <BrowserRouter>

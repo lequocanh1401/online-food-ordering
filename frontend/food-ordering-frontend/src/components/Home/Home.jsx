@@ -8,10 +8,9 @@ export const Home = () => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
 
-    // Lấy ngăn restaurant từ trong kho tổng Redux ra dùng
-    const { restaurant } = useSelector(store => store);
+    // Sửa lỗi cảnh báo: Chỉ gọi đích danh ngăn restaurant
+    const restaurant = useSelector(store => store.restaurant);
 
-    // Kích hoạt hàm gọi API khi trang Home vừa lên hình
     useEffect(() => {
         if (jwt) {
             dispatch(getAllRestaurantsAction(jwt));
@@ -36,8 +35,8 @@ export const Home = () => {
             <section className='px-5 lg:px-20 pt-10'>
                 <h1 className='text-2xl font-semibold text-gray-400 pb-8'>Đặt Hàng Ngay</h1>
                 <div className='flex flex-wrap items-center justify-around gap-5'>
-                    {/* Quét qua mảng dữ liệu THẬT từ Backend để in thẻ */}
-                    {restaurant.restaurants?.map((item) => (
+                    {/* Sửa lỗi sập web: Ép React kiểm tra xem nó CÓ PHẢI LÀ MẢNG KHÔNG rồi mới map */}
+                    {Array.isArray(restaurant?.restaurants) && restaurant.restaurants.map((item) => (
                         <RestaurantCard key={item.id} item={item} />
                     ))}
                 </div>

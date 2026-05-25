@@ -5,7 +5,6 @@ import {
     GET_RESTAURANT_BY_ID_FAILURE, GET_RESTAURANT_BY_ID_REQUEST, GET_RESTAURANT_BY_ID_SUCCESS
 } from "./ActionType";
 
-// 1. Lấy danh sách tất cả nhà hàng
 export const getAllRestaurantsAction = (token) => async (dispatch) => {
     dispatch({ type: GET_ALL_RESTAURANTS_REQUEST });
     try {
@@ -17,12 +16,13 @@ export const getAllRestaurantsAction = (token) => async (dispatch) => {
         dispatch({ type: GET_ALL_RESTAURANTS_SUCCESS, payload: data });
         console.log("Tải danh sách nhà hàng thành công", data);
     } catch (error) {
-        dispatch({ type: GET_ALL_RESTAURANTS_FAILURE, payload: error });
-        console.log("Lỗi tải danh sách nhà hàng", error);
+        // Cắt gọn lỗi để Redux không bị nghẹn
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: GET_ALL_RESTAURANTS_FAILURE, payload: errorMessage });
+        console.log("Lỗi tải danh sách nhà hàng", errorMessage);
     }
 };
 
-// 2. Lấy chi tiết 1 nhà hàng theo ID
 export const getRestaurantById = (reqData) => async (dispatch) => {
     dispatch({ type: GET_RESTAURANT_BY_ID_REQUEST });
     try {
@@ -34,7 +34,8 @@ export const getRestaurantById = (reqData) => async (dispatch) => {
         dispatch({ type: GET_RESTAURANT_BY_ID_SUCCESS, payload: data });
         console.log("Tải chi tiết nhà hàng thành công", data);
     } catch (error) {
-        dispatch({ type: GET_RESTAURANT_BY_ID_FAILURE, payload: error });
-        console.log("Lỗi tải chi tiết nhà hàng", error);
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: GET_RESTAURANT_BY_ID_FAILURE, payload: errorMessage });
+        console.log("Lỗi tải chi tiết nhà hàng", errorMessage);
     }
 };
