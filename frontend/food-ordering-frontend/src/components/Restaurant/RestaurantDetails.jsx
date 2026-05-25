@@ -22,11 +22,12 @@ export const RestaurantDetails = () => {
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { id, city } = useParams(); // Bắt ID nhà hàng từ trên thanh URL
-    const { restaurant, menu } = useSelector(store => store);
+    const { id } = useParams();
+
+    const restaurant = useSelector(store => store.restaurant);
+    const menu = useSelector(store => store.menu);
     const jwt = localStorage.getItem("jwt");
 
-    // Lắng nghe sự thay đổi của bộ lọc (Chay/Mặn, Thể loại)
     const handleFilter = (e) => {
         if (e.target.name === "food_type") {
             setFoodType(e.target.value);
@@ -35,7 +36,6 @@ export const RestaurantDetails = () => {
         }
     };
 
-    // Khi trang vừa mở, gọi API lấy dữ liệu ngay
     useEffect(() => {
         if (jwt) {
             dispatch(getRestaurantById({ jwt, restaurantId: id }));
@@ -78,7 +78,6 @@ export const RestaurantDetails = () => {
             <Divider className='bg-gray-700' />
 
             <section className='pt-[2rem] lg:flex relative'>
-                {/* Cột bộ lọc bên trái */}
                 <div className='space-y-10 lg:w-[20%] filter text-gray-400'>
                     <div className='box space-y-5 lg:sticky top-28'>
                         <div>
@@ -105,7 +104,6 @@ export const RestaurantDetails = () => {
                     </div>
                 </div>
 
-                {/* Cột thực đơn bên phải */}
                 <div className='space-y-5 lg:w-[80%] lg:pl-10'>
                     {menu.menuItems?.map((item) => (
                         <MenuCard key={item.id} item={item} />

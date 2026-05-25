@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Divider, Button, Card, TextField, Grid, Modal, Box } from '@mui/material';
+import { Divider, Button, Card, TextField, Modal, Box } from '@mui/material';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
@@ -24,7 +24,9 @@ const validationSchema = Yup.object().shape({
 
 export const Cart = () => {
     const [open, setOpen] = useState(false);
-    const { cart, auth } = useSelector(store => store); // Móc kho Giỏ hàng và User ra
+
+    const cart = useSelector(store => store.cart);
+    const auth = useSelector(store => store.auth);
     const dispatch = useDispatch();
 
     const handleOpenAddressModal = () => setOpen(true);
@@ -34,7 +36,6 @@ export const Cart = () => {
         const data = {
             jwt: localStorage.getItem("jwt"),
             order: {
-                // Lấy ID nhà hàng từ món ăn đầu tiên trong giỏ
                 restaurantId: cart.cartItems[0]?.food?.restaurant?.id,
                 deliveryAddress: {
                     fullName: auth.user?.fullName,
@@ -46,7 +47,6 @@ export const Cart = () => {
                 }
             }
         };
-        // Bắn action tạo đơn hàng
         dispatch(createOrder(data));
         console.log("Submit Đặt Hàng: ", data);
         handleClose();
@@ -56,7 +56,6 @@ export const Cart = () => {
         <div className='min-h-screen pt-5'>
             <main className='lg:flex justify-between'>
                 <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
-                    {/* In danh sách món trong giỏ (Kèm khiên bảo vệ Array) */}
                     {Array.isArray(cart.cartItems) && cart.cartItems.map((item) => (
                         <CartItem key={item.id} item={item} />
                     ))}
@@ -77,7 +76,6 @@ export const Cart = () => {
                             <Divider className="bg-gray-700" />
                             <div className='flex justify-between text-white pb-5 font-semibold text-lg'>
                                 <p>Tổng cộng</p>
-                                {/* Cộng thêm phí ship vào tổng tiền */}
                                 <p>{(cart.cart?.total || 0) + 30000} đ</p>
                             </div>
                         </div>
@@ -90,7 +88,6 @@ export const Cart = () => {
                     <div>
                         <h1 className='text-center font-semibold text-2xl py-10 text-white'>Chọn Địa Chỉ Giao Hàng</h1>
                         <div className='flex gap-5 flex-wrap justify-center'>
-                            {/* Nút bật Form thêm địa chỉ */}
                             <Card className="flex gap-5 w-64 p-5 items-center justify-center cursor-pointer bg-gray-800 text-white hover:bg-gray-700 transition-all" onClick={handleOpenAddressModal}>
                                 <div className='flex flex-col items-center'>
                                     <AddLocationAltIcon fontSize="large" className="text-pink-500" />
@@ -107,26 +104,16 @@ export const Cart = () => {
                     <h2 className="text-xl font-semibold mb-5 text-gray-800">Thêm Địa Chỉ Mới</h2>
                     <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
                         {({ touched, errors }) => (
-                            <Form>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12}>
-                                        <Field as={TextField} name="streetAddress" label="Số nhà, Tên đường" fullWidth variant="outlined" error={touched.streetAddress && Boolean(errors.streetAddress)} helperText={<ErrorMessage name="streetAddress" />} />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <Field as={TextField} name="city" label="Quận / Huyện" fullWidth variant="outlined" error={touched.city && Boolean(errors.city)} helperText={<ErrorMessage name="city" />} />
-                                    </Grid>
-                                    <Grid item xs={12} md={6}>
-                                        <Field as={TextField} name="state" label="Tỉnh / Thành phố" fullWidth variant="outlined" error={touched.state && Boolean(errors.state)} helperText={<ErrorMessage name="state" />} />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Field as={TextField} name="pincode" label="Mã bưu điện" fullWidth variant="outlined" error={touched.pincode && Boolean(errors.pincode)} helperText={<ErrorMessage name="pincode" />} />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Button fullWidth variant="contained" type="submit" color="primary" sx={{ mt: 2, py: 1.5 }}>
-                                            Giao Hàng Tới Đây
-                                        </Button>
-                                    </Grid>
-                                </Grid>
+                            <Form className="space-y-4">
+                                <Field as={TextField} name="streetAddress" label="Số nhà, Tên đường" fullWidth variant="outlined" error={touched.streetAddress && Boolean(errors.streetAddress)} helperText={<ErrorMessage name="streetAddress" />} />
+                                <div className='flex gap-4'>
+                                    <Field as={TextField} name="city" label="Quận / Huyện" fullWidth variant="outlined" error={touched.city && Boolean(errors.city)} helperText={<ErrorMessage name="city" />} />
+                                    <Field as={TextField} name="state" label="Tỉnh / Thành phố" fullWidth variant="outlined" error={touched.state && Boolean(errors.state)} helperText={<ErrorMessage name="state" />} />
+                                </div>
+                                <Field as={TextField} name="pincode" label="Mã bưu điện" fullWidth variant="outlined" error={touched.pincode && Boolean(errors.pincode)} helperText={<ErrorMessage name="pincode" />} />
+                                <Button fullWidth variant="contained" type="submit" color="primary" sx={{ mt: 2, py: 1.5 }}>
+                                    Giao Hàng Tới Đây
+                                </Button>
                             </Form>
                         )}
                     </Formik>
