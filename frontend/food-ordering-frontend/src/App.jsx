@@ -9,12 +9,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { getUser } from './State/Authentication/Action';
 import { findCart } from './State/Cart/Action';
+import { Admin } from './components/Admin/Admin'; // Thêm Import này
 
 function App() {
   const dispatch = useDispatch();
   const jwt = localStorage.getItem("jwt");
-
-  // Sửa lỗi cảnh báo: Chỉ gọi đích danh ngăn auth
   const auth = useSelector(store => store.auth);
 
   useEffect(() => {
@@ -33,6 +32,8 @@ function App() {
           <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetails />} />
           <Route path='/cart' element={<Cart />} />
           <Route path='/my-profile/*' element={<Profile />} />
+          {/* 👇 KHAI BÁO TUYẾN ĐƯỜNG MỚI CHO ADMIN 👇 */}
+          <Route path='/admin/restaurant/*' element={<Admin />} />
         </Routes>
         <AuthModal />
       </div>
