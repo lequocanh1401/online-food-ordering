@@ -4,32 +4,17 @@ import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import { Formik, Field, Form, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import { CartItem } from './CartItem';
-import { AddressCard } from './AddressCard';
+import { useDispatch, useSelector } from 'react-redux';
+import { createOrder } from '../../State/Order/Action';
 
-const cartItems = [1, 1]; // Giả lập 2 món trong giỏ
-const addresses = [1, 1]; // Giả lập 2 địa chỉ đã lưu
-
-// Giao diện cho cái bảng Modal (Cửa sổ nổi bật lên)
 const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: 400,
-    bgcolor: 'background.paper',
-    outline: "none",
-    boxShadow: 24,
-    p: 4,
-    borderRadius: 2
+    position: 'absolute', top: '50%', left: '50%',
+    transform: 'translate(-50%, -50%)', width: 400,
+    bgcolor: 'background.paper', outline: "none",
+    boxShadow: 24, p: 4, borderRadius: 2
 };
 
-// Cấu hình Formik & Yup để bắt lỗi form
-const initialValues = {
-    streetAddress: "",
-    state: "",
-    city: "",
-    pincode: ""
-};
+const initialValues = { streetAddress: "", state: "", city: "", pincode: "" };
 const validationSchema = Yup.object().shape({
     streetAddress: Yup.string().required("Vui lòng nhập địa chỉ cụ thể"),
     state: Yup.string().required("Vui lòng nhập Tỉnh / Thành phố"),
@@ -39,25 +24,41 @@ const validationSchema = Yup.object().shape({
 
 export const Cart = () => {
     const [open, setOpen] = useState(false);
+    const { cart, auth } = useSelector(store => store); // Móc kho Giỏ hàng và User ra
+    const dispatch = useDispatch();
+
     const handleOpenAddressModal = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    const handleSelectAddress = (item) => {
-        console.log("Đã chọn địa chỉ: ", item);
-    }
-
     const handleSubmit = (values) => {
-        console.log("Submit địa chỉ mới: ", values);
+        const data = {
+            jwt: localStorage.getItem("jwt"),
+            order: {
+                // Lấy ID nhà hàng từ món ăn đầu tiên trong giỏ
+                restaurantId: cart.cartItems[0]?.food?.restaurant?.id,
+                deliveryAddress: {
+                    fullName: auth.user?.fullName,
+                    streetAddress: values.streetAddress,
+                    city: values.city,
+                    state: values.state,
+                    postalCode: values.pincode,
+                    country: "Vietnam"
+                }
+            }
+        };
+        // Bắn action tạo đơn hàng
+        dispatch(createOrder(data));
+        console.log("Submit Đặt Hàng: ", data);
         handleClose();
-    }
+    };
 
     return (
         <div className='min-h-screen pt-5'>
             <main className='lg:flex justify-between'>
-                {/* Cột trái: Hóa đơn & Món ăn */}
                 <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
-                    {cartItems.map((item, index) => (
-                        <CartItem key={index} />
+                    {/* In danh sách món trong giỏ (Kèm khiên bảo vệ Array) */}
+                    {Array.isArray(cart.cartItems) && cart.cartItems.map((item) => (
+                        <CartItem key={item.id} item={item} />
                     ))}
 
                     <Divider className="bg-gray-700" />
@@ -67,20 +68,17 @@ export const Cart = () => {
                         <div className='space-y-3'>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Tổng tiền món</p>
-                                <p>300,000 đ</p>
+                                <p>{cart.cart?.total || 0} đ</p>
                             </div>
                             <div className='flex justify-between text-gray-400'>
                                 <p>Phí giao hàng</p>
-                                <p>30,000 đ</p>
-                            </div>
-                            <div className='flex justify-between text-gray-400'>
-                                <p>Phí dịch vụ</p>
-                                <p>15,000 đ</p>
+                                <p>30000 đ</p>
                             </div>
                             <Divider className="bg-gray-700" />
                             <div className='flex justify-between text-white pb-5 font-semibold text-lg'>
                                 <p>Tổng cộng</p>
-                                <p>345,000 đ</p>
+                                {/* Cộng thêm phí ship vào tổng tiền */}
+                                <p>{(cart.cart?.total || 0) + 30000} đ</p>
                             </div>
                         </div>
                     </div>
@@ -88,15 +86,10 @@ export const Cart = () => {
 
                 <Divider orientation='vertical' flexItem className="bg-gray-700 hidden lg:block" />
 
-                {/* Cột phải: Chọn địa chỉ & Đặt hàng */}
                 <section className='lg:w-[70%] flex justify-center px-5 pb-10 lg:pb-0'>
                     <div>
                         <h1 className='text-center font-semibold text-2xl py-10 text-white'>Chọn Địa Chỉ Giao Hàng</h1>
                         <div className='flex gap-5 flex-wrap justify-center'>
-                            {addresses.map((item, index) => (
-                                <AddressCard key={index} handleSelectAddress={handleSelectAddress} item={item} showButton={true} />
-                            ))}
-
                             {/* Nút bật Form thêm địa chỉ */}
                             <Card className="flex gap-5 w-64 p-5 items-center justify-center cursor-pointer bg-gray-800 text-white hover:bg-gray-700 transition-all" onClick={handleOpenAddressModal}>
                                 <div className='flex flex-col items-center'>
@@ -109,7 +102,6 @@ export const Cart = () => {
                 </section>
             </main>
 
-            {/* Khung nổi (Modal) Form nhập địa chỉ */}
             <Modal open={open} onClose={handleClose}>
                 <Box sx={style}>
                     <h2 className="text-xl font-semibold mb-5 text-gray-800">Thêm Địa Chỉ Mới</h2>

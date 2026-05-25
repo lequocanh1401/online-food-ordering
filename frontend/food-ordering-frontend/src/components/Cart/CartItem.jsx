@@ -1,39 +1,64 @@
 import React from 'react';
 import { IconButton, Chip } from '@mui/material';
-// Đổi sang dùng icon nét đặc (không có chữ Outline)
 import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { useDispatch } from 'react-redux';
+import { removeCartItem, updateCartItem } from '../../State/Cart/Action';
 
-export const CartItem = () => {
+export const CartItem = ({ item }) => {
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+
+    // Hàm tăng giảm số lượng
+    const handleUpdateCartItem = (value) => {
+        if (value === -1 && item.quantity === 1) {
+            handleRemoveCartItem();
+        } else {
+            const data = { cartItemId: item.id, quantity: item.quantity + value };
+            dispatch(updateCartItem({ data, jwt }));
+        }
+    };
+
+    // Hàm xóa món khỏi giỏ
+    const handleRemoveCartItem = () => {
+        dispatch(removeCartItem({ cartItemId: item.id, jwt }));
+    };
+
     return (
         <div className='px-5'>
             <div className='lg:flex items-center lg:space-x-5'>
                 <div>
-                    <img className='w-[5rem] h-[5rem] object-cover' src="https://images.pexels.com/photos/1146760/pexels-photo-1146760.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Food" />
+                    <img
+                        className='w-[5rem] h-[5rem] object-cover rounded-md'
+                        src={item.food?.images?.[0] || "https://images.pexels.com/photos/1146760/pexels-photo-1146760.jpeg"}
+                        alt="Food"
+                    />
                 </div>
                 <div className='flex items-center justify-between lg:w-[70%]'>
                     <div className='space-y-1 lg:space-y-3 w-full'>
-                        <p className='font-semibold'>Pizza Thập Cẩm</p>
+                        <p className='font-semibold'>{item.food?.name}</p>
                         <div className='flex justify-between items-center'>
                             <div className='flex items-center space-x-1'>
-                                <IconButton color="primary">
+                                <IconButton onClick={() => handleUpdateCartItem(-1)} color="primary">
                                     <RemoveCircleIcon />
                                 </IconButton>
                                 <div className='w-5 h-5 text-sm flex items-center justify-center font-semibold text-white'>
-                                    2
+                                    {item.quantity}
                                 </div>
-                                <IconButton color="primary">
+                                <IconButton onClick={() => handleUpdateCartItem(1)} color="primary">
                                     <AddCircleIcon />
                                 </IconButton>
                             </div>
-                            <p className='text-white font-semibold'>150,000 đ</p>
+                            <p className='text-white font-semibold'>{item.totalPrice} đ</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div className='pt-3 space-x-2'>
-                {/* Hiển thị giả lập topping đã chọn */}
-                {[1, 1].map((item, index) => <Chip key={index} label="Phô mai" className="bg-gray-800 text-gray-300" size="small" />)}
+                {/* Hiển thị các topping/nguyên liệu mà khách đã tick chọn */}
+                {item.ingredients?.map((ingredient, index) => (
+                    <Chip key={index} label={ingredient} className="bg-gray-800 text-gray-300" size="small" />
+                ))}
             </div>
         </div>
     )
