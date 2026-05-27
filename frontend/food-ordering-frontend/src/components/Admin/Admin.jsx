@@ -18,15 +18,17 @@ export const Admin = () => {
     const { restaurant } = useSelector(store => store);
     const handleClose = () => { };
 
-    // Vừa vào trang là quét database tìm nhà hàng của User ngay
     useEffect(() => {
         if (jwt) {
             dispatch(getRestaurantByUserId(jwt));
         }
     }, [jwt, dispatch]);
 
-    // NẾU CHƯA CÓ NHÀ HÀNG: Ép phải xem form Đăng ký
-    if (!restaurant.usersRestaurant) {
+    // 👇 In ra Console để xem Redux đang giữ dữ liệu gì
+    console.log("Kiểm tra dữ liệu Restaurant từ Redux:", restaurant);
+
+    // 👇 Điều kiện chặn khắt khe hơn: Bắt buộc biến usersRestaurant phải có thực và phải chứa id
+    if (!restaurant?.usersRestaurant || !restaurant?.usersRestaurant?.id) {
         return (
             <div className="pt-5 pb-20">
                 <CreateRestaurantForm />
@@ -34,7 +36,6 @@ export const Admin = () => {
         );
     }
 
-    // NẾU ĐÃ CÓ NHÀ HÀNG: Hiển thị giao diện quản lý
     return (
         <div className='lg:flex justify-between min-h-[80vh]'>
             <div className='lg:w-[20%]'>
