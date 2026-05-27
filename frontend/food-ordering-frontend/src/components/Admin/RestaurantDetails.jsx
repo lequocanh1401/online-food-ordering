@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Card, CardContent, CardHeader, Grid } from '@mui/material';
+import { Button, Card, CardContent, CardHeader } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateRestaurantStatus } from '../../State/Restaurant/Action';
 
@@ -28,19 +28,17 @@ export const RestaurantDetails = () => {
                 </Button>
             </div>
 
-            <Grid container spacing={2}>
-                <Grid item xs={12}>
-                    <Card className='bg-gray-800 text-white'>
-                        <CardHeader title="Thông Tin Chi Tiết" />
-                        <CardContent className='space-y-4'>
-                            <p><span className='font-semibold'>Chủ quán:</span> {usersRestaurant?.owner?.fullName}</p>
-                            <p><span className='font-semibold'>Loại ẩm thực:</span> {usersRestaurant?.cuisineType}</p>
-                            <p><span className='font-semibold'>Giờ mở cửa:</span> {usersRestaurant?.openingHours}</p>
-                            <p><span className='font-semibold'>Địa chỉ:</span> {usersRestaurant?.address?.streetAddress}, {usersRestaurant?.address?.city}</p>
-                        </CardContent>
-                    </Card>
-                </Grid>
-            </Grid>
+            <div className='w-full'>
+                <Card className='bg-gray-800 text-white'>
+                    <CardHeader title="Thông Tin Chi Tiết" />
+                    <CardContent className='space-y-4'>
+                        <p><span className='font-semibold'>Chủ quán:</span> {usersRestaurant?.owner?.fullName}</p>
+                        <p><span className='font-semibold'>Loại ẩm thực:</span> {usersRestaurant?.cuisineType}</p>
+                        <p><span className='font-semibold'>Giờ mở cửa:</span> {usersRestaurant?.openingHours}</p>
+                        <p><span className='font-semibold'>Địa chỉ:</span> {usersRestaurant?.address?.streetAddress}, {usersRestaurant?.address?.city}</p>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 };

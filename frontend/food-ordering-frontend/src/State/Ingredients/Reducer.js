@@ -1,6 +1,6 @@
 import {
     CREATE_INGREDIENT_CATEGORY_SUCCESS, CREATE_INGREDIENT_SUCCESS,
-    GET_INGREDIENTS, GET_INGREDIENT_CATEGORY_SUCCESS, UPDATE_IN_STOCK
+    GET_INGREDIENTS, GET_INGREDIENT_CATEGORY_SUCCESS, UPDATE_STOCK
 } from "./ActionType";
 
 const initialState = {
@@ -19,7 +19,7 @@ export const ingredientReducer = (state = initialState, action) => {
             return { ...state, category: [...state.category, action.payload] };
         case CREATE_INGREDIENT_SUCCESS:
             return { ...state, ingredients: [...state.ingredients, action.payload] };
-        case UPDATE_IN_STOCK:
+        case UPDATE_STOCK: // Đã sửa ở đây cho khớp với ActionType
             return {
                 ...state,
                 update: action.payload,

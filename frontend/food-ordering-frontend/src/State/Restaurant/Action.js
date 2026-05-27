@@ -13,6 +13,34 @@ import {
     DELETE_EVENT_REQUEST, DELETE_EVENT_SUCCESS, DELETE_EVENT_FAILURE
 } from "./ActionType";
 
+// ================= CÁC HÀM DÀNH CHO KHÁCH HÀNG =================
+
+export const getAllRestaurantsAction = (token) => async (dispatch) => {
+    dispatch({ type: GET_ALL_RESTAURANTS_REQUEST });
+    try {
+        const { data } = await axios.get(`${API_URL}/api/restaurants`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        dispatch({ type: GET_ALL_RESTAURANTS_SUCCESS, payload: data });
+    } catch (error) {
+        dispatch({ type: GET_ALL_RESTAURANTS_FAILURE, payload: error.message });
+    }
+};
+
+export const getRestaurantById = (reqData) => async (dispatch) => {
+    dispatch({ type: GET_RESTAURANT_BY_ID_REQUEST });
+    try {
+        const { data } = await axios.get(`${API_URL}/api/restaurants/${reqData.restaurantId}`, {
+            headers: { Authorization: `Bearer ${reqData.jwt}` },
+        });
+        dispatch({ type: GET_RESTAURANT_BY_ID_SUCCESS, payload: data });
+    } catch (error) {
+        dispatch({ type: GET_RESTAURANT_BY_ID_FAILURE, payload: error.message });
+    }
+};
+
+// ================= CÁC HÀM DÀNH CHO ADMIN =================
+
 export const getRestaurantByUserId = (jwt) => async (dispatch) => {
     dispatch({ type: GET_RESTAURANT_BY_USER_ID_REQUEST });
     try {

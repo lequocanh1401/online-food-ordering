@@ -25,17 +25,34 @@ export const Ingredients = () => {
         }
     }, [dispatch, jwt, restaurant.usersRestaurant?.id]);
 
+    const handleCloseIngredient = () => {
+        setOpenIngredient(false);
+        setIngredientData({ name: "", categoryId: "" });
+    };
+
+    const handleCloseCategory = () => {
+        setOpenCategory(false);
+        setCategoryName("");
+    };
+
     const handleCreateIngredient = (e) => {
         e.preventDefault();
-        const data = { ...ingredientData, restaurantId: restaurant.usersRestaurant?.id };
+
+        const data = {
+            name: ingredientData.name,
+            // Ép kiểu chuẩn xác sang số (Long) để Java không báo lỗi
+            categoryId: Number(ingredientData.categoryId),
+            restaurantId: restaurant.usersRestaurant?.id
+        };
+
         dispatch(createIngredient({ data, jwt }));
-        setOpenIngredient(false);
+        handleCloseIngredient();
     };
 
     const handleCreateCategory = (e) => {
         e.preventDefault();
         dispatch(createIngredientCategory({ data: { name: categoryName, restaurantId: restaurant.usersRestaurant?.id }, jwt }));
-        setOpenCategory(false);
+        handleCloseCategory();
     };
 
     const handleUpdateStock = (id) => {
@@ -48,19 +65,19 @@ export const Ingredients = () => {
                 <div className="lg:w-[65%] w-full">
                     <Card className="bg-gray-800 text-white">
                         <CardHeader title="KHO NGUYÊN LIỆU" action={<IconButton onClick={() => setOpenIngredient(true)} sx={{ backgroundColor: "#e91e63", color: "white" }}><AddIcon /></IconButton>} />
-                        <TableContainer component={Paper} className="bg-gray-800 text-white">
-                            <Table sx={{ minWidth: 400 }}>
+                        <TableContainer component={Paper} sx={{ maxHeight: 500, backgroundColor: '#1f2937' }}>
+                            <Table stickyHeader>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tên</TableCell>
-                                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>Nhóm</TableCell>
-                                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>Còn hàng</TableCell>
+                                        <TableCell sx={{ backgroundColor: '#1f2937', color: "white", fontWeight: "bold" }}>ID</TableCell>
+                                        <TableCell sx={{ backgroundColor: '#1f2937', color: "white", fontWeight: "bold" }}>Tên</TableCell>
+                                        <TableCell sx={{ backgroundColor: '#1f2937', color: "white", fontWeight: "bold" }}>Nhóm</TableCell>
+                                        <TableCell sx={{ backgroundColor: '#1f2937', color: "white", fontWeight: "bold" }}>Còn hàng</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {Array.isArray(ingredients.ingredients) && ingredients.ingredients.map((row) => (
-                                        <TableRow key={row.id}>
+                                    {Array.isArray(ingredients.ingredients) && [...ingredients.ingredients].reverse().map((row, index) => (
+                                        <TableRow key={row.id || `ingredient-${index}`}>
                                             <TableCell sx={{ color: "gray" }}>{row.id}</TableCell>
                                             <TableCell sx={{ color: "gray" }}>{row.name}</TableCell>
                                             <TableCell sx={{ color: "gray" }}>{row.category?.name}</TableCell>
@@ -80,17 +97,17 @@ export const Ingredients = () => {
                 <div className="lg:w-[35%] w-full">
                     <Card className="bg-gray-800 text-white">
                         <CardHeader title="NHÓM NGUYÊN LIỆU" action={<IconButton onClick={() => setOpenCategory(true)} sx={{ backgroundColor: "#e91e63", color: "white" }}><AddIcon /></IconButton>} />
-                        <TableContainer component={Paper} className="bg-gray-800 text-white">
-                            <Table sx={{ minWidth: 200 }}>
+                        <TableContainer component={Paper} sx={{ maxHeight: 500, backgroundColor: '#1f2937' }}>
+                            <Table stickyHeader>
                                 <TableHead>
                                     <TableRow>
-                                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>ID</TableCell>
-                                        <TableCell sx={{ color: "white", fontWeight: "bold" }}>Tên Nhóm</TableCell>
+                                        <TableCell sx={{ backgroundColor: '#1f2937', color: "white", fontWeight: "bold" }}>ID</TableCell>
+                                        <TableCell sx={{ backgroundColor: '#1f2937', color: "white", fontWeight: "bold" }}>Tên Nhóm</TableCell>
                                     </TableRow>
                                 </TableHead>
                                 <TableBody>
-                                    {Array.isArray(ingredients.category) && ingredients.category.map((row) => (
-                                        <TableRow key={row.id}>
+                                    {Array.isArray(ingredients.category) && [...ingredients.category].reverse().map((row, index) => (
+                                        <TableRow key={row.id || `category-${index}`}>
                                             <TableCell sx={{ color: "gray" }}>{row.id}</TableCell>
                                             <TableCell sx={{ color: "gray" }}>{row.name}</TableCell>
                                         </TableRow>
@@ -102,15 +119,21 @@ export const Ingredients = () => {
                 </div>
             </div>
 
-            <Modal open={openIngredient} onClose={() => setOpenIngredient(false)}>
+            <Modal open={openIngredient} onClose={handleCloseIngredient}>
                 <Box sx={style}>
-                    <h2 className="text-xl font-semibold mb-5 text-center">Thêm Nguyên Liệu</h2>
+                    <h2 className="text-xl font-semibold mb-5 text-center text-gray-800">Thêm Nguyên Liệu</h2>
                     <form onSubmit={handleCreateIngredient} className="space-y-4">
-                        <TextField label="Tên (vd: Trân châu đen)" fullWidth variant="outlined" required onChange={(e) => setIngredientData({ ...ingredientData, name: e.target.value })} />
+                        <TextField
+                            label="Tên (vd: Trân châu đen)" fullWidth variant="outlined" required
+                            value={ingredientData.name} onChange={(e) => setIngredientData({ ...ingredientData, name: e.target.value })}
+                        />
                         <FormControl fullWidth>
                             <InputLabel>Chọn nhóm nguyên liệu</InputLabel>
-                            <Select value={ingredientData.categoryId} label="Chọn nhóm nguyên liệu" onChange={(e) => setIngredientData({ ...ingredientData, categoryId: e.target.value })} required>
-                                {ingredients.category.map((item) => (
+                            <Select
+                                value={ingredientData.categoryId || ""} label="Chọn nhóm nguyên liệu" required
+                                onChange={(e) => setIngredientData({ ...ingredientData, categoryId: e.target.value })}
+                            >
+                                {Array.isArray(ingredients.category) && ingredients.category.map((item) => (
                                     <MenuItem key={item.id} value={item.id}>{item.name}</MenuItem>
                                 ))}
                             </Select>
@@ -120,11 +143,14 @@ export const Ingredients = () => {
                 </Box>
             </Modal>
 
-            <Modal open={openCategory} onClose={() => setOpenCategory(false)}>
+            <Modal open={openCategory} onClose={handleCloseCategory}>
                 <Box sx={style}>
-                    <h2 className="text-xl font-semibold mb-5 text-center">Tạo Nhóm Nguyên Liệu</h2>
+                    <h2 className="text-xl font-semibold mb-5 text-center text-gray-800">Tạo Nhóm Nguyên Liệu</h2>
                     <form onSubmit={handleCreateCategory} className="space-y-4">
-                        <TextField label="Tên (vd: Topping...)" fullWidth variant="outlined" required onChange={(e) => setCategoryName(e.target.value)} />
+                        <TextField
+                            label="Tên (vd: Topping...)" fullWidth variant="outlined" required
+                            value={categoryName} onChange={(e) => setCategoryName(e.target.value)}
+                        />
                         <Button fullWidth variant="contained" type="submit" sx={{ backgroundColor: "#e91e63" }}>Tạo mới</Button>
                     </form>
                 </Box>

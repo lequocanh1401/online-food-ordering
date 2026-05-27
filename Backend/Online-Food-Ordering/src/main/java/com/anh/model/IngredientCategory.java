@@ -1,6 +1,7 @@
 package com.anh.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -13,6 +14,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+// CHẶN JACKSON ĐỤNG VÀO RESTAURANT
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "restaurant"})
 public class IngredientCategory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,6 +27,7 @@ public class IngredientCategory {
     @ManyToOne
     private Restaurant restaurant;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
     private List<IngredientsItem> ingredients = new ArrayList<>();
 }

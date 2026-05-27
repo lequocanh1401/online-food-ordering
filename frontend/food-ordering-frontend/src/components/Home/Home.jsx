@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'; // Đây là dòng bị thiếu gây lỗi!
 import { MultiItemCarousel } from './MultiItemCarousel';
 import { RestaurantCard } from '../Restaurant/RestaurantCard';
 import { useDispatch, useSelector } from 'react-redux';
@@ -8,12 +8,18 @@ export const Home = () => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
 
-    // Sửa lỗi cảnh báo: Chỉ gọi đích danh ngăn restaurant
     const restaurant = useSelector(store => store.restaurant);
 
+    // MÁY NGHE LÉN ĐÃ ĐƯỢC BẬT
     useEffect(() => {
+        console.log("1. Trang chủ đã load thành công!");
+        console.log("2. Token (JWT) hiện tại đang là:", jwt);
+
         if (jwt) {
+            console.log("3. TUYỆT VỜI! Đã có Token, bắt đầu gọi API getAllRestaurants...");
             dispatch(getAllRestaurantsAction(jwt));
+        } else {
+            console.warn("3. LỖI: Token rỗng! Hệ thống từ chối gọi API vì chưa Đăng nhập.");
         }
     }, [dispatch, jwt]);
 
@@ -35,7 +41,6 @@ export const Home = () => {
             <section className='px-5 lg:px-20 pt-10'>
                 <h1 className='text-2xl font-semibold text-gray-400 pb-8'>Đặt Hàng Ngay</h1>
                 <div className='flex flex-wrap items-center justify-around gap-5'>
-                    {/* Sửa lỗi sập web: Ép React kiểm tra xem nó CÓ PHẢI LÀ MẢNG KHÔNG rồi mới map */}
                     {Array.isArray(restaurant?.restaurants) && restaurant.restaurants.map((item) => (
                         <RestaurantCard key={item.id} item={item} />
                     ))}
