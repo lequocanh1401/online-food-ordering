@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { Dashboard } from './Dashboard';
@@ -8,20 +8,38 @@ import { RestaurantDetails } from './RestaurantDetails';
 import { Ingredients } from './Ingredients';
 import { FoodCategory } from './FoodCategory';
 import { Events } from './Events';
+import { CreateRestaurantForm } from './CreateRestaurantForm';
+import { useDispatch, useSelector } from 'react-redux';
+import { getRestaurantByUserId } from '../../State/Restaurant/Action';
 
 export const Admin = () => {
-    const handleClose = () => {
-        // Hàm đóng sidebar trên điện thoại
-    };
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+    const { restaurant } = useSelector(store => store);
+    const handleClose = () => { };
 
+    // Vừa vào trang là quét database tìm nhà hàng của User ngay
+    useEffect(() => {
+        if (jwt) {
+            dispatch(getRestaurantByUserId(jwt));
+        }
+    }, [jwt, dispatch]);
+
+    // NẾU CHƯA CÓ NHÀ HÀNG: Ép phải xem form Đăng ký
+    if (!restaurant.usersRestaurant) {
+        return (
+            <div className="pt-5 pb-20">
+                <CreateRestaurantForm />
+            </div>
+        );
+    }
+
+    // NẾU ĐÃ CÓ NHÀ HÀNG: Hiển thị giao diện quản lý
     return (
         <div className='lg:flex justify-between min-h-[80vh]'>
-            {/* Cột trái: Sidebar (Chiếm 20% màn hình) */}
             <div className='lg:w-[20%]'>
                 <AdminSidebar handleClose={handleClose} />
             </div>
-
-            {/* Cột phải: Nội dung chính (Chiếm 80% màn hình) */}
             <div className='lg:w-[80%] pb-10'>
                 <Routes>
                     <Route path='/' element={<Dashboard />} />

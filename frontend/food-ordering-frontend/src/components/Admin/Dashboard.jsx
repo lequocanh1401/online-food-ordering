@@ -1,11 +1,9 @@
 import React from 'react';
-import { CreateMenuForm } from './CreateMenuForm';
 
 export const Dashboard = () => {
     return (
-        <div>
-            {/* Đổi sang gọi Form tạo món ăn để chạy thử nghiệm */}
-            <CreateMenuForm />
+        <div className="p-5 text-gray-300">
+            <h1>Trang Tổng Quan (Dashboard) sẽ được vẽ biểu đồ sau.</h1>
         </div>
     );
 };
