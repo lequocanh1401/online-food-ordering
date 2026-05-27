@@ -1,15 +1,28 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import CreateIcon from '@mui/icons-material/Create';
-import { CreateFoodCategoryForm } from './CreateFoodCategoryForm'; // Import cái popup vào
-
-const categories = [1, 1, 1]; // Dữ liệu giả
+import { CreateFoodCategoryForm } from './CreateFoodCategoryForm';
+import { useDispatch, useSelector } from 'react-redux';
+import { getRestaurantsCategory } from '../../State/Restaurant/Action'; // Cấu hình đường dẫn Action của Zosh
 
 export const FoodCategory = () => {
-    // State để quản lý việc ẩn/hiện popup
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+    const { restaurant } = useSelector(store => store);
+
+    // Tự động gọi API lấy danh mục món ăn của quán khi tải trang
+    useEffect(() => {
+        if (restaurant.usersRestaurant?.id) {
+            dispatch(getRestaurantsCategory({
+                restaurantId: restaurant.usersRestaurant?.id,
+                jwt
+            }));
+        }
+    }, [restaurant.usersRestaurant?.id, dispatch, jwt]);
 
     return (
         <div className='px-2'>
@@ -17,7 +30,6 @@ export const FoodCategory = () => {
                 <Card className='mt-1'>
                     <CardHeader
                         action={
-                            // Bấm vào nút này sẽ gọi hàm handleOpen để bật Popup
                             <IconButton onClick={handleOpen} aria-label="settings">
                                 <CreateIcon />
                             </IconButton>
@@ -34,10 +46,11 @@ export const FoodCategory = () => {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {categories.map((row, index) => (
-                                    <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                {/* Duyệt qua mảng danh mục thật trả về từ Redux Store */}
+                                {restaurant.categories?.map((item, index) => (
+                                    <TableRow key={item.id || index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                         <TableCell component="th" scope="row">{index + 1}</TableCell>
-                                        <TableCell align="left">{"Món Chính"}</TableCell>
+                                        <TableCell align="left">{item.name}</TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -46,7 +59,6 @@ export const FoodCategory = () => {
                 </Card>
             </Box>
 
-            {/* Nhúng cái Popup vào đây, truyền biến open và hàm handleClose xuống cho nó */}
             <CreateFoodCategoryForm open={open} handleClose={handleClose} />
         </div>
     );

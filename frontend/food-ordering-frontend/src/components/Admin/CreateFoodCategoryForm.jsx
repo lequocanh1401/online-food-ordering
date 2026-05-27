@@ -1,8 +1,9 @@
 import React from 'react';
 import { Box, Button, Modal, TextField } from '@mui/material';
 import { useFormik } from 'formik';
+import { useDispatch, useSelector } from 'react-redux';
+import { createCategoryAction } from '../../State/Restaurant/Action'; // Cấu hình đường dẫn Action của Zosh
 
-// Cấu hình vị trí và kiểu dáng cho cái Popup (Nằm chính giữa màn hình)
 const style = {
     position: 'absolute',
     top: '50%',
@@ -17,14 +18,25 @@ const style = {
 };
 
 export const CreateFoodCategoryForm = ({ open, handleClose }) => {
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+    // Lấy thông tin nhà hàng từ kho Redux để biết danh mục này thuộc về quán nào
+    const { restaurant } = useSelector(store => store);
+
     const formik = useFormik({
         initialValues: {
             categoryName: "",
         },
         onSubmit: (values) => {
-            console.log("Dữ liệu Danh mục mới chuẩn bị gửi:", values);
-            alert("Đã tạo danh mục thành công! Check Console F12 nhé.");
-            // Reset form và đóng popup sau khi submit
+            const reqData = {
+                name: values.categoryName,
+                restaurantId: restaurant.usersRestaurant?.id
+            };
+            console.log("Đang gửi API tạo danh mục mới:", reqData);
+
+            // Gọi Action gửi lên Spring Boot
+            dispatch(createCategoryAction({ reqData, jwt }));
+
             formik.resetForm();
             handleClose();
         }
@@ -39,7 +51,7 @@ export const CreateFoodCategoryForm = ({ open, handleClose }) => {
         >
             <Box sx={style}>
                 <form onSubmit={formik.handleSubmit}>
-                    <h1 className='text-gray-600 font-bold text-center text-xl pb-6'>
+                    <h1 className='text-gray-400 font-bold text-center text-xl pb-6'>
                         THÊM DANH MỤC MỚI
                     </h1>
                     <TextField

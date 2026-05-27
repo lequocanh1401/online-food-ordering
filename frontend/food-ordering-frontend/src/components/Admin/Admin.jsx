@@ -5,10 +5,11 @@ import { Dashboard } from './Dashboard';
 import { Orders } from './Orders';
 import { Menu } from './Menu';
 import { RestaurantDetails } from './RestaurantDetails';
-import { Ingredients } from './Ingredients';
+import { AdminIngredients } from './Ingredients';
 import { FoodCategory } from './FoodCategory';
 import { Events } from './Events';
 import { CreateRestaurantForm } from './CreateRestaurantForm';
+import { CreateMenuForm } from './CreateMenuForm'; // Import form thêm món ăn
 import { useDispatch, useSelector } from 'react-redux';
 import { getRestaurantByUserId } from '../../State/Restaurant/Action';
 
@@ -24,10 +25,6 @@ export const Admin = () => {
         }
     }, [jwt, dispatch]);
 
-    // 👇 In ra Console để xem Redux đang giữ dữ liệu gì
-    console.log("Kiểm tra dữ liệu Restaurant từ Redux:", restaurant);
-
-    // 👇 Điều kiện chặn khắt khe hơn: Bắt buộc biến usersRestaurant phải có thực và phải chứa id
     if (!restaurant?.usersRestaurant || !restaurant?.usersRestaurant?.id) {
         return (
             <div className="pt-5 pb-20">
@@ -46,7 +43,8 @@ export const Admin = () => {
                     <Route path='/' element={<Dashboard />} />
                     <Route path='/orders' element={<Orders />} />
                     <Route path='/menu' element={<Menu />} />
-                    <Route path='/ingredients' element={<Ingredients />} />
+                    <Route path='/add-menu' element={<CreateMenuForm />} /> {/* Đường dẫn gọi form */}
+                    <Route path='/ingredients' element={<AdminIngredients />} />
                     <Route path='/category' element={<FoodCategory />} />
                     <Route path='/event' element={<Events />} />
                     <Route path='/details' element={<RestaurantDetails />} />

@@ -1,14 +1,23 @@
 import React, { useState } from 'react';
-import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Button } from '@mui/material';
 import CreateIcon from '@mui/icons-material/Create';
 import { CreateIngredientForm } from './CreateIngredientForm';
-
-const orders = [1, 1, 1]; // Dữ liệu giả
+import { useDispatch, useSelector } from 'react-redux';
+import { updateStockOfIngredient } from '../../State/Ingredients/Action';
 
 export const IngredientsTable = () => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
+
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+    const { ingredients } = useSelector(store => store);
+
+    // Bắn API chuyển đổi trạng thái Còn hàng <-> Hết hàng
+    const handleUpdateStock = (id) => {
+        dispatch(updateStockOfIngredient({ id, jwt }));
+    };
 
     return (
         <Box>
@@ -19,18 +28,23 @@ export const IngredientsTable = () => {
                         <TableHead>
                             <TableRow>
                                 <TableCell>ID</TableCell>
-                                <TableCell align="right">Name</TableCell>
-                                <TableCell align="right">Category</TableCell>
-                                <TableCell align="right">Availability</TableCell>
+                                <TableCell align="right">Tên nguyên liệu</TableCell>
+                                <TableCell align="right">Thuộc Danh mục</TableCell>
+                                <TableCell align="right">Trạng thái (Bấm để đổi)</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {orders.map((row, index) => (
-                                <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
-                                    <TableCell component="th" scope="row">{index + 1}</TableCell>
-                                    <TableCell align="right">{"Tomato"}</TableCell>
-                                    <TableCell align="right">{"Vegetable"}</TableCell>
-                                    <TableCell align="right">{"In Stock"}</TableCell>
+                            {/* Đổ list nguyên liệu thật ra */}
+                            {ingredients.ingredients?.map((item) => (
+                                <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    <TableCell component="th" scope="row">{item.id}</TableCell>
+                                    <TableCell align="right">{item.name}</TableCell>
+                                    <TableCell align="right">{item.category?.name}</TableCell>
+                                    <TableCell align="right">
+                                        <Button onClick={() => handleUpdateStock(item.id)} color={item.inStoke ? "success" : "error"}>
+                                            {item.inStoke ? "In Stock" : "Out of Stock"}
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

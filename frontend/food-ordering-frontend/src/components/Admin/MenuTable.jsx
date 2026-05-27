@@ -1,49 +1,79 @@
-import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Button } from '@mui/material';
 import CreateIcon from '@mui/icons-material/Create';
 import DeleteIcon from '@mui/icons-material/Delete';
-
-const orders = [1, 1, 1]; // Zosh dùng mảng tạm này để lặp ra 3 dòng dữ liệu giả
+import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteFoodAction, getMenuItemsByRestaurantId } from '../../State/Menu/Action';
 
 export const MenuTable = () => {
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+
+    // Kéo kho menu ra (Nhớ check xem trong root reducer tên là menu hay menuItem nhé, chuẩn Zosh thường là menu)
+    // const { restaurant, menu } = useSelector(store => store);
+    const restaurant = useSelector(store => store.restaurant);
+    const menu = useSelector(store => store.menu);
+
+    // Kéo danh sách món ăn khi load trang
+    useEffect(() => {
+        if (restaurant.usersRestaurant?.id) {
+            dispatch(getMenuItemsByRestaurantId({
+                jwt,
+                restaurantId: restaurant.usersRestaurant.id,
+                vegetarian: false,
+                nonveg: false,
+                seasonal: false,
+                foodCategory: ""
+            }));
+        }
+    }, [dispatch, jwt, restaurant.usersRestaurant?.id]);
+
+    const handleDeleteFood = (foodId) => {
+        dispatch(deleteFoodAction({ foodId, jwt }));
+    };
+
     return (
         <Box>
             <Card className='mt-1'>
                 <CardHeader
                     action={
-                        <IconButton aria-label="settings">
+                        // Nút cộng này sẽ chuyển hướng bạn sang trang CreateMenuForm (nếu bạn muốn)
+                        <IconButton onClick={() => navigate("/admin/restaurant/add-menu")} aria-label="settings">
                             <CreateIcon />
                         </IconButton>
                     }
-                    title={"Menu"}
+                    title={"Thực Đơn (Menu)"}
                     sx={{ pt: 2, alignItems: "center" }}
                 />
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
-                                <TableCell>Image</TableCell>
-                                <TableCell align="right">Title</TableCell>
-                                <TableCell align="right">Ingredients</TableCell>
-                                <TableCell align="right">Price</TableCell>
-                                <TableCell align="right">Availability</TableCell>
-                                <TableCell align="right">Delete</TableCell>
+                                <TableCell>Hình ảnh</TableCell>
+                                <TableCell align="right">Tên món</TableCell>
+                                <TableCell align="right">Nguyên liệu</TableCell>
+                                <TableCell align="right">Giá</TableCell>
+                                <TableCell align="right">Tình trạng</TableCell>
+                                <TableCell align="right">Xóa</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {orders.map((row, index) => (
-                                <TableRow
-                                    key={index}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
+                            {/* Duyệt mảng menu thật */}
+                            {menu.menuItems?.map((item) => (
+                                <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                     <TableCell component="th" scope="row">
-                                        <Avatar src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg" />
+                                        <Avatar src={item.images[0]} alt={item.name} />
                                     </TableCell>
-                                    <TableCell align="right">{"Pizza"}</TableCell>
-                                    <TableCell align="right">{"Bacon, cheese"}</TableCell>
-                                    <TableCell align="right">{"$50"}</TableCell>
-                                    <TableCell align="right">{"In Stock"}</TableCell>
+                                    <TableCell align="right">{item.name}</TableCell>
                                     <TableCell align="right">
-                                        <IconButton color="primary">
+                                        {item.ingredients?.map((ing) => ing.name).join(", ")}
+                                    </TableCell>
+                                    <TableCell align="right">{item.price}đ</TableCell>
+                                    <TableCell align="right">{item.available ? "Có sẵn" : "Hết hàng"}</TableCell>
+                                    <TableCell align="right">
+                                        <IconButton color="primary" onClick={() => handleDeleteFood(item.id)}>
                                             <DeleteIcon />
                                         </IconButton>
                                     </TableCell>
