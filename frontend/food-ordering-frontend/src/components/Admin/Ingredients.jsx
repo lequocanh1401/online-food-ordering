@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Modal, Box, TextField, Button, Grid, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Card, CardHeader, IconButton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Modal, Box, TextField, Button, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { useDispatch, useSelector } from 'react-redux';
 import { createIngredient, createIngredientCategory, getIngredientCategory, getIngredientsOfRestaurant, updateStockOfIngredient } from '../../State/Ingredients/Action';
@@ -15,7 +15,6 @@ export const Ingredients = () => {
     const [openIngredient, setOpenIngredient] = useState(false);
     const [openCategory, setOpenCategory] = useState(false);
 
-    // Form States
     const [ingredientData, setIngredientData] = useState({ name: "", categoryId: "" });
     const [categoryName, setCategoryName] = useState("");
 
@@ -45,9 +44,8 @@ export const Ingredients = () => {
 
     return (
         <div className="px-2">
-            <Grid container spacing={2}>
-                {/* Cột 1: Danh sách Nguyên liệu chi tiết */}
-                <Grid item xs={12} lg={8}>
+            <div className="lg:flex gap-5 space-y-5 lg:space-y-0">
+                <div className="lg:w-[65%] w-full">
                     <Card className="bg-gray-800 text-white">
                         <CardHeader title="KHO NGUYÊN LIỆU" action={<IconButton onClick={() => setOpenIngredient(true)} sx={{ backgroundColor: "#e91e63", color: "white" }}><AddIcon /></IconButton>} />
                         <TableContainer component={Paper} className="bg-gray-800 text-white">
@@ -77,10 +75,9 @@ export const Ingredients = () => {
                             </Table>
                         </TableContainer>
                     </Card>
-                </Grid>
+                </div>
 
-                {/* Cột 2: Nhóm Nguyên liệu (Category) */}
-                <Grid item xs={12} lg={4}>
+                <div className="lg:w-[35%] w-full">
                     <Card className="bg-gray-800 text-white">
                         <CardHeader title="NHÓM NGUYÊN LIỆU" action={<IconButton onClick={() => setOpenCategory(true)} sx={{ backgroundColor: "#e91e63", color: "white" }}><AddIcon /></IconButton>} />
                         <TableContainer component={Paper} className="bg-gray-800 text-white">
@@ -102,10 +99,9 @@ export const Ingredients = () => {
                             </Table>
                         </TableContainer>
                     </Card>
-                </Grid>
-            </Grid>
+                </div>
+            </div>
 
-            {/* Modal tạo Nguyên liệu */}
             <Modal open={openIngredient} onClose={() => setOpenIngredient(false)}>
                 <Box sx={style}>
                     <h2 className="text-xl font-semibold mb-5 text-center">Thêm Nguyên Liệu</h2>
@@ -124,12 +120,11 @@ export const Ingredients = () => {
                 </Box>
             </Modal>
 
-            {/* Modal tạo Nhóm Nguyên Liệu */}
             <Modal open={openCategory} onClose={() => setOpenCategory(false)}>
                 <Box sx={style}>
                     <h2 className="text-xl font-semibold mb-5 text-center">Tạo Nhóm Nguyên Liệu</h2>
                     <form onSubmit={handleCreateCategory} className="space-y-4">
-                        <TextField label="Tên (vd: Topping, Sốt...)" fullWidth variant="outlined" required onChange={(e) => setCategoryName(e.target.value)} />
+                        <TextField label="Tên (vd: Topping...)" fullWidth variant="outlined" required onChange={(e) => setCategoryName(e.target.value)} />
                         <Button fullWidth variant="contained" type="submit" sx={{ backgroundColor: "#e91e63" }}>Tạo mới</Button>
                     </form>
                 </Box>

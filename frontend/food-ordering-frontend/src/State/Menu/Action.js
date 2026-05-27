@@ -1,43 +1,56 @@
 import axios from "axios";
 import { API_URL } from "../../config/api";
 import {
+    CREATE_MENU_ITEM_FAILURE, CREATE_MENU_ITEM_REQUEST, CREATE_MENU_ITEM_SUCCESS,
+    DELETE_MENU_ITEM_FAILURE, DELETE_MENU_ITEM_REQUEST, DELETE_MENU_ITEM_SUCCESS,
     GET_MENU_ITEMS_BY_RESTAURANT_ID_FAILURE, GET_MENU_ITEMS_BY_RESTAURANT_ID_REQUEST, GET_MENU_ITEMS_BY_RESTAURANT_ID_SUCCESS,
-    SEARCH_MENU_ITEM_FAILURE, SEARCH_MENU_ITEM_REQUEST, SEARCH_MENU_ITEM_SUCCESS
+    UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE, UPDATE_MENU_ITEMS_AVAILABILITY_REQUEST, UPDATE_MENU_ITEMS_AVAILABILITY_SUCCESS
 } from "./ActionType";
 
-// 1. Lấy danh sách món ăn của 1 nhà hàng (có kèm bộ lọc)
-export const getMenuItemsByRestaurantId = (reqData) => async (dispatch) => {
-    dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_REQUEST });
+export const createMenuItem = ({ menu, jwt }) => async (dispatch) => {
+    dispatch({ type: CREATE_MENU_ITEM_REQUEST });
     try {
-        const { data } = await axios.get(
-            `${API_URL}/api/food/restaurant/${reqData.restaurantId}?vegetarian=${reqData.vegetarian}&nonveg=${reqData.nonveg}&seasonal=${reqData.seasonal}&food_category=${reqData.foodCategory}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${reqData.jwt}`,
-                },
-            }
-        );
-        dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_SUCCESS, payload: data });
-        console.log("Tải thực đơn nhà hàng thành công", data);
+        const { data } = await axios.post(`${API_URL}/api/admin/food`, menu, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        dispatch({ type: CREATE_MENU_ITEM_SUCCESS, payload: data });
     } catch (error) {
-        dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_FAILURE, payload: error });
-        console.log("Lỗi tải thực đơn", error);
+        dispatch({ type: CREATE_MENU_ITEM_FAILURE, payload: error.message });
     }
 };
 
-// 2. Tìm kiếm món ăn
-export const searchMenuItem = (reqData) => async (dispatch) => {
-    dispatch({ type: SEARCH_MENU_ITEM_REQUEST });
+export const getMenuItemsByRestaurantId = (reqData) => async (dispatch) => {
+    dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_REQUEST });
     try {
-        const { data } = await axios.get(`${API_URL}/api/food/search?name=${reqData.keyword}`, {
-            headers: {
-                Authorization: `Bearer ${reqData.jwt}`,
-            },
+        const { data } = await axios.get(`${API_URL}/api/food/restaurant/${reqData.restaurantId}?vagetarian=${reqData.vegetarian}&nonveg=${reqData.nonveg}&seasonal=${reqData.seasonal}&food_category=${reqData.foodCategory}`, {
+            headers: { Authorization: `Bearer ${reqData.jwt}` },
         });
-        dispatch({ type: SEARCH_MENU_ITEM_SUCCESS, payload: data });
-        console.log("Tìm kiếm món ăn thành công", data);
+        dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_SUCCESS, payload: data });
     } catch (error) {
-        dispatch({ type: SEARCH_MENU_ITEM_FAILURE, payload: error });
-        console.log("Lỗi tìm kiếm món ăn", error);
+        dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_FAILURE, payload: error.message });
+    }
+};
+
+export const deleteFoodAction = ({ foodId, jwt }) => async (dispatch) => {
+    dispatch({ type: DELETE_MENU_ITEM_REQUEST });
+    try {
+        await axios.delete(`${API_URL}/api/admin/food/${foodId}`, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        dispatch({ type: DELETE_MENU_ITEM_SUCCESS, payload: foodId });
+    } catch (error) {
+        dispatch({ type: DELETE_MENU_ITEM_FAILURE, payload: error.message });
+    }
+};
+
+export const updateMenuItemsAvailability = ({ foodId, jwt }) => async (dispatch) => {
+    dispatch({ type: UPDATE_MENU_ITEMS_AVAILABILITY_REQUEST });
+    try {
+        const { data } = await axios.put(`${API_URL}/api/admin/food/${foodId}`, {}, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        dispatch({ type: UPDATE_MENU_ITEMS_AVAILABILITY_SUCCESS, payload: data });
+    } catch (error) {
+        dispatch({ type: UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE, payload: error.message });
     }
 };
