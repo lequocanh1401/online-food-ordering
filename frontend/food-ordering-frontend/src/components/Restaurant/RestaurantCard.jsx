@@ -1,51 +1,51 @@
 import React from 'react';
-import { Card, Chip, IconButton } from '@mui/material';
-import FavoriteIcon from '@mui/icons-material/Favorite';
+import { Card, CardContent, IconButton, Chip } from '@mui/material';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom';
 
-// Thêm tham số { item } để nhận dữ liệu từ Trang chủ truyền vào
 export const RestaurantCard = ({ item }) => {
     const navigate = useNavigate();
 
     const handleNavigateToRestaurant = () => {
-        // Đường dẫn chuẩn theo định tuyến ta đã làm ở App.jsx
         if (item.open) {
             navigate(`/restaurant/${item.address?.city}/${item.name}/${item.id}`);
         }
     };
 
     return (
-        <Card className='w-[18rem] transition-all cursor-pointer hover:shadow-2xl hover:shadow-gray-500'>
-            <div className='relative' onClick={handleNavigateToRestaurant}>
-                {/* Lấy ảnh đầu tiên trong mảng ảnh của nhà hàng */}
+        <Card className='m-5 w-[18rem] bg-gray-900 text-white rounded-lg overflow-hidden shadow-xl border border-gray-800 relative group'>
+            <div
+                className={`${item.open ? 'cursor-pointer' : 'cursor-not-allowed'} relative h-[12rem] overflow-hidden`}
+                onClick={handleNavigateToRestaurant}
+            >
                 <img
-                    className='w-full h-[10rem] rounded-t-md object-cover'
-                    src={item.images?.[0] || "https://images.pexels.com/photos/262047/pexels-photo-262047.jpeg"}
-                    alt="restaurant"
+                    className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+                    src={item.images?.[0] || "https://images.pexels.com/photos/262978/pexels-photo-262978.jpeg"}
+                    alt={item.name}
                 />
-                <Chip
-                    size="small"
-                    className="absolute top-2 left-2"
-                    color={item.open ? "success" : "error"}
-                    label={item.open ? "Mở cửa" : "Đóng cửa"}
-                />
+                <div className='absolute top-2 left-2'>
+                    <Chip
+                        size="small"
+                        className='font-semibold'
+                        color={item.open ? "success" : "error"}
+                        label={item.open ? "Open" : "Closed"}
+                    />
+                </div>
             </div>
 
-            <div className='p-4 textPart lg:flex w-full justify-between'>
-                <div className='space-y-1'>
-                    <p className='font-semibold text-lg'>{item.name}</p>
-                    <p className='text-gray-500 text-sm'>
-                        {item.description}
-                    </p>
+            <CardContent className='p-4'>
+                <div className='flex justify-between items-start'>
+                    <div className='space-y-1 cursor-pointer' onClick={handleNavigateToRestaurant}>
+                        <h1 className='font-semibold text-lg text-gray-100 truncate w-[12rem]'>{item.name}</h1>
+                        <p className='text-gray-400 text-sm truncate w-[14rem]'>{item.description || "Món ăn thơm ngon, chuẩn vị sạch sẽ!"}</p>
+                    </div>
+                    <div>
+                        <IconButton>
+                            <FavoriteBorderIcon className='text-red-500' />
+                        </IconButton>
+                    </div>
                 </div>
-                <div>
-                    <IconButton>
-                        {/* Tạm thời để icon tim tĩnh, sau này nối API user ta xử lý sau */}
-                        <FavoriteBorderIcon />
-                    </IconButton>
-                </div>
-            </div>
+            </CardContent>
         </Card>
-    )
-}
+    );
+};
