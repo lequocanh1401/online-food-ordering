@@ -1,15 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Navbar } from './components/Navbar/Navbar';
-import { Home } from './components/Home/Home';
-import { RestaurantDetails } from './components/Restaurant/RestaurantDetails';
-import { Cart } from './components/Cart/Cart';
-import { Profile } from './components/Profile/Profile';
-import { AuthModal } from './components/Auth/AuthModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { useEffect } from 'react';
 import { getUser } from './State/Authentication/Action';
 import { findCart } from './State/Cart/Action';
-import { Admin } from './components/Admin/Admin'; // Thêm Import này
+import { AuthModal } from './components/Auth/AuthModal';
+import { CustomerRoutes } from './Routers/CustomerRoutes';
+import { Admin } from './components/Admin/Admin'; // (Zosh sẽ chuyển cái này sang AdminRoutes ở Video 4)
 
 function App() {
   const dispatch = useDispatch();
@@ -26,13 +22,8 @@ function App() {
   return (
     <BrowserRouter>
       <div className='bg-gray-900 min-h-screen text-white'>
-        <Navbar />
         <Routes>
-          <Route path='/*' element={<Home />} />
-          <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetails />} />
-          <Route path='/cart' element={<Cart />} />
-          <Route path='/my-profile/*' element={<Profile />} />
-          {/* 👇 KHAI BÁO TUYẾN ĐƯỜNG MỚI CHO ADMIN 👇 */}
+          <Route path='/*' element={<CustomerRoutes />} />
           <Route path='/admin/restaurant/*' element={<Admin />} />
         </Routes>
         <AuthModal />

@@ -6,24 +6,31 @@ import {
 } from "./ActionType";
 
 // 1. Tạo đơn hàng mới (Từ Giỏ hàng bấm Đặt hàng)
-export const createOrder = (reqData) => async (dispatch) => {
-    dispatch({ type: CREATE_ORDER_REQUEST });
-    try {
-        const { data } = await axios.post(`${API_URL}/api/order`, reqData.order, {
-            headers: { Authorization: `Bearer ${reqData.jwt}` },
-        });
+export const createOrder = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: CREATE_ORDER_REQUEST }); // Lưu ý: Đảm bảo CREATE_ORDER_REQUEST đã được import từ ActionType
+        try {
+            console.log("Đang gửi yêu cầu tạo đơn hàng và lấy link Stripe...");
 
-        // Nếu dự án của bạn có tích hợp thanh toán (như VNPAY/Stripe), backend sẽ trả về URL
-        if (data.payment_url) {
-            window.location.href = data.payment_url;
+            // Dùng axios thay vì api
+            const { data } = await axios.post(`${API_URL}/api/order`, reqData.order, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`,
+                },
+            });
+
+            // LOGIC MỚI: Nếu Java trả về link Stripe, đá Khách hàng sang đó
+            if (data.payment_url) {
+                console.log("Đã có link Stripe, chuẩn bị chuyển trang:", data.payment_url);
+                window.location.href = data.payment_url;
+            }
+
+            dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
+        } catch (error) {
+            console.error("Lỗi tạo đơn hàng rồi:", error);
+            dispatch({ type: CREATE_ORDER_FAILURE, payload: error.message });
         }
-
-        dispatch({ type: CREATE_ORDER_SUCCESS, payload: data });
-        console.log("Tạo đơn hàng thành công", data);
-    } catch (error) {
-        dispatch({ type: CREATE_ORDER_FAILURE, payload: error });
-        console.log("Lỗi tạo đơn hàng", error);
-    }
+    };
 };
 
 // 2. Lấy danh sách lịch sử đơn hàng của người dùng

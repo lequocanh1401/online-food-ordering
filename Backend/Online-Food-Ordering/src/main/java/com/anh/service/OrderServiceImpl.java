@@ -49,6 +49,9 @@ public class OrderServiceImpl implements OrderService {
 
         // 3. Lấy giỏ hàng hiện tại của User để chuyển thành OrderItem
         Cart cart = cartService.findCartByUserId(user.getId());
+
+        createdOrder.setTotalAmount(cart.getTotal());
+
         List<OrderItem> orderItems = new ArrayList<>();
 
         for(CartItem cartItem : cart.getItem()) { // Sử dụng cart.getItems() nếu Model của bạn đặt số nhiều
