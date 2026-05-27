@@ -1,88 +1,101 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Card, CardHeader, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, AvatarGroup, Button, Menu, MenuItem } from '@mui/material';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchRestaurantsOrder, updateOrderStatus } from '../../State/RestaurantOrder/Action'; // Chú ý: Kiểm tra đường dẫn thư mục này trong máy bạn
 
-// Dữ liệu giả để vẽ giao diện (Lát nối API sẽ xóa đi)
-const fakeOrders = [1, 2, 3];
+const orderStatusList = [
+    { label: "Pending (Đang chờ)", value: "PENDING" },
+    { label: "Completed (Hoàn thành)", value: "COMPLETED" },
+    { label: "Out For Delivery (Đang giao)", value: "OUT_FOR_DELIVERY" },
+    { label: "Delivered (Đã giao)", value: "DELIVERED" }
+];
 
-const orderStatuses = ["PENDING", "OUT_FOR_DELIVERY", "DELIVERED", "COMPLETED"];
+export const OrderTable = ({ filterValue }) => {
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
 
-export const OrderTable = () => {
-    // Trạng thái mở/đóng menu chọn cập nhật trạng thái đơn hàng
+    // Rút kho Redux
+    const restaurant = useSelector(store => store.restaurant);
+    const restaurantOrder = useSelector(store => store.restaurantOrder); // Tên store này có thể khác tùy file store.js của bạn
+
     const [anchorEl, setAnchorEl] = useState(null);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
     const open = Boolean(anchorEl);
 
-    const handleClick = (event) => {
+    // Kéo đơn hàng từ Java lên khi vào trang hoặc khi đổi bộ lọc
+    useEffect(() => {
+        if (restaurant.usersRestaurant?.id) {
+            dispatch(fetchRestaurantsOrder({
+                restaurantId: restaurant.usersRestaurant.id,
+                orderStatus: filterValue === "ALL" ? "" : filterValue,
+                jwt: jwt
+            }));
+        }
+    }, [dispatch, jwt, restaurant.usersRestaurant?.id, filterValue]);
+
+    const handleUpdateStatusClick = (event, orderId) => {
         setAnchorEl(event.currentTarget);
+        setSelectedOrderId(orderId);
     };
 
-    const handleClose = () => {
+    const handleCloseMenu = () => {
         setAnchorEl(null);
     };
 
+    const handleUpdateOrder = (orderStatus) => {
+        // Bắn API cập nhật trạng thái
+        dispatch(updateOrderStatus({ orderId: selectedOrderId, orderStatus, jwt }));
+        handleCloseMenu();
+    };
+
     return (
-        <Box>
+        <Box className="mt-5">
             <Card className='mt-1'>
-                <CardHeader
-                    title={"Tất Cả Đơn Hàng"}
-                    sx={{ pt: 2, alignItems: "center" }}
-                />
+                <CardHeader title={"Tất Cả Đơn Hàng"} sx={{ pt: 2, alignItems: "center" }} />
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
                         <TableHead>
                             <TableRow>
-                                <TableCell>ID</TableCell>
-                                <TableCell>Hình ảnh</TableCell>
-                                <TableCell>Khách hàng</TableCell>
-                                <TableCell>Giá tiền</TableCell>
-                                <TableCell>Tên món</TableCell>
-                                <TableCell>Thành phần</TableCell>
-                                <TableCell>Trạng thái</TableCell>
-                                <TableCell>Cập nhật</TableCell>
+                                <TableCell>Mã ĐH</TableCell>
+                                <TableCell align="right">Hình ảnh</TableCell>
+                                <TableCell align="right">Khách hàng</TableCell>
+                                <TableCell align="right">Giá tiền</TableCell>
+                                <TableCell align="right">Món ăn</TableCell>
+                                <TableCell align="right">Trạng thái</TableCell>
+                                <TableCell align="right">Cập nhật</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {fakeOrders.map((row, index) => (
-                                <TableRow
-                                    key={index}
-                                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-                                >
-                                    <TableCell component="th" scope="row">
-                                        {index + 1}
-                                    </TableCell>
-                                    <TableCell>
-                                        <AvatarGroup max={4} sx={{ justifyContent: 'start' }}>
-                                            <Avatar alt="food" src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg" />
-                                            <Avatar alt="food" src="https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg" />
+                            {restaurantOrder.orders?.map((item) => (
+                                <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
+                                    <TableCell component="th" scope="row">{item.id}</TableCell>
+                                    <TableCell align="right">
+                                        <AvatarGroup max={4} sx={{ justifyContent: 'flex-end' }}>
+                                            {item.items.map((orderItem) => (
+                                                <Avatar key={orderItem.id} src={orderItem.food?.images[0]} />
+                                            ))}
                                         </AvatarGroup>
                                     </TableCell>
-                                    <TableCell>Lê Quốc Anh</TableCell>
-                                    <TableCell>150,000đ</TableCell>
-                                    <TableCell>Cơm Sườn Bì Chả</TableCell>
-                                    <TableCell>Cơm, Sườn nướng, Chả trứng</TableCell>
-                                    <TableCell>PENDING</TableCell>
-                                    <TableCell>
-                                        <Button
-                                            id="basic-button"
-                                            aria-controls={open ? 'basic-menu' : undefined}
-                                            aria-haspopup="true"
-                                            aria-expanded={open ? 'true' : undefined}
-                                            onClick={handleClick}
-                                            variant="outlined"
-                                        >
-                                            Cập nhật
-                                        </Button>
+                                    <TableCell align="right">{item.customer?.fullName}</TableCell>
+                                    <TableCell align="right">{item.totalPrice}đ</TableCell>
+                                    <TableCell align="right">
+                                        {item.items.map((orderItem) => <p key={orderItem.id}>{orderItem.food?.name}</p>)}
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <span className={`px-4 py-2 rounded-full text-sm font-semibold ${item.orderStatus === 'PENDING' ? 'bg-yellow-600 text-white' : 'bg-green-600 text-white'}`}>
+                                            {item.orderStatus}
+                                        </span>
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        <Button onClick={(e) => handleUpdateStatusClick(e, item.id)}>Cập nhật</Button>
                                         <Menu
-                                            id="basic-menu"
                                             anchorEl={anchorEl}
-                                            open={open}
-                                            onClose={handleClose}
-                                            MenuListProps={{
-                                                'aria-labelledby': 'basic-button',
-                                            }}
+                                            open={open && selectedOrderId === item.id}
+                                            onClose={handleCloseMenu}
                                         >
-                                            {orderStatuses.map((status) => (
-                                                <MenuItem key={status} onClick={handleClose}>
-                                                    {status}
+                                            {orderStatusList.map((status) => (
+                                                <MenuItem key={status.value} onClick={() => handleUpdateOrder(status.value)}>
+                                                    {status.label}
                                                 </MenuItem>
                                             ))}
                                         </Menu>
