@@ -5,7 +5,9 @@ import { Dashboard } from './Dashboard';
 import { Orders } from './Orders';
 import { Menu } from './Menu';
 import { RestaurantDetails } from './RestaurantDetails';
-// Lát nữa có form nào mới thì bạn import thêm vào đây
+import { Ingredients } from './Ingredients';
+import { FoodCategory } from './FoodCategory';
+import { Events } from './Events';
 
 export const Admin = () => {
     const handleClose = () => {
@@ -25,6 +27,9 @@ export const Admin = () => {
                     <Route path='/' element={<Dashboard />} />
                     <Route path='/orders' element={<Orders />} />
                     <Route path='/menu' element={<Menu />} />
+                    <Route path='/ingredients' element={<Ingredients />} />
+                    <Route path='/category' element={<FoodCategory />} />
+                    <Route path='/event' element={<Events />} />
                     <Route path='/details' element={<RestaurantDetails />} />
                 </Routes>
             </div>
