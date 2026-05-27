@@ -1,21 +1,19 @@
-import { combineReducers } from "redux";
-import { configureStore } from "@reduxjs/toolkit";
+import { applyMiddleware, combineReducers, legacy_createStore } from "redux";
+import { thunk } from "redux-thunk";
 import { authReducer } from "./Authentication/Reducer";
 import { restaurantReducer } from "./Restaurant/Reducer";
 import { menuItemReducer } from "./Menu/Reducer";
 import { cartReducer } from "./Cart/Reducer";
-import { orderReducer } from "./Order/Reducer";           // Thêm dòng này
-import { ingredientReducer } from "./Ingredients/Reducer"; // Thêm dòng này
+import { orderReducer } from "./Order/Reducer";
+import { ingredientReducer } from "./Ingredients/Reducer"; // THÊM DÒNG NÀY
 
 const rootReducer = combineReducers({
     auth: authReducer,
     restaurant: restaurantReducer,
     menu: menuItemReducer,
     cart: cartReducer,
-    order: orderReducer,             // Thêm dòng này
-    restaurantOrder: ingredientReducer, // Tạm thời map chung, có thể đổi tên tùy ý
+    order: orderReducer,
+    ingredients: ingredientReducer, // THÊM DÒNG NÀY
 });
 
-export const store = configureStore({
-    reducer: rootReducer,
-});
+export const store = legacy_createStore(rootReducer, applyMiddleware(thunk));
