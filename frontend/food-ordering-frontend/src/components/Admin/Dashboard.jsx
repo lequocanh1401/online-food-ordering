@@ -1,11 +1,11 @@
 import React from 'react';
-import { CreateRestaurantForm } from './CreateRestaurantForm';
+import { CreateMenuForm } from './CreateMenuForm';
 
 export const Dashboard = () => {
     return (
         <div>
-            {/* Gọi Form tạo nhà hàng ra trang chủ Admin để kiểm tra */}
-            <CreateRestaurantForm />
+            {/* Đổi sang gọi Form tạo món ăn để chạy thử nghiệm */}
+            <CreateMenuForm />
         </div>
     );
 };

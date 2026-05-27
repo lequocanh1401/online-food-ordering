@@ -5,7 +5,11 @@ import { getUser } from './State/Authentication/Action';
 import { findCart } from './State/Cart/Action';
 import { AuthModal } from './components/Auth/AuthModal';
 import { CustomerRoutes } from './Routers/CustomerRoutes';
-import { Admin } from './components/Admin/Admin'; // (Zosh sẽ chuyển cái này sang AdminRoutes ở Video 4)
+import { Admin } from './components/Admin/Admin';
+
+// 2 Dòng import mới cho Theme của Zosh
+import { CssBaseline, ThemeProvider } from '@mui/material';
+import { darkTheme } from './Theme/DarkTheme';
 
 function App() {
   const dispatch = useDispatch();
@@ -20,15 +24,19 @@ function App() {
   }, [auth.jwt, dispatch, jwt]);
 
   return (
-    <BrowserRouter>
-      <div className='bg-gray-900 min-h-screen text-white'>
-        <Routes>
-          <Route path='/*' element={<CustomerRoutes />} />
-          <Route path='/admin/restaurant/*' element={<Admin />} />
-        </Routes>
-        <AuthModal />
-      </div>
-    </BrowserRouter>
+    // Bọc ThemeProvider và CssBaseline ra ngoài cùng
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <div className='bg-gray-900 min-h-screen text-white'>
+          <Routes>
+            <Route path='/*' element={<CustomerRoutes />} />
+            <Route path='/admin/restaurant/*' element={<Admin />} />
+          </Routes>
+          <AuthModal />
+        </div>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
