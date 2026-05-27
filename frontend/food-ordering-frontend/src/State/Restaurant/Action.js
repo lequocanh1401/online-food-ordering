@@ -1,4 +1,5 @@
 import axios from "axios";
+import { api } from "../../config/api";
 import { API_URL } from "/src/config/api.js";
 import {
     GET_ALL_RESTAURANTS_FAILURE, GET_ALL_RESTAURANTS_REQUEST, GET_ALL_RESTAURANTS_SUCCESS,
@@ -9,6 +10,7 @@ import {
     CREATE_CATEGORY_REQUEST, CREATE_CATEGORY_SUCCESS, CREATE_CATEGORY_FAILURE,
     GET_RESTAURANTS_CATEGORY_REQUEST, GET_RESTAURANTS_CATEGORY_SUCCESS, GET_RESTAURANTS_CATEGORY_FAILURE,
     CREATE_EVENT_REQUEST, CREATE_EVENT_SUCCESS, CREATE_EVENT_FAILURE,
+    CREATE_EVENTS_REQUEST, CREATE_EVENTS_SUCCESS, CREATE_EVENTS_FAILURE,
     GET_RESTAURANTS_EVENTS_REQUEST, GET_RESTAURANTS_EVENTS_SUCCESS, GET_RESTAURANTS_EVENTS_FAILURE,
     DELETE_EVENT_REQUEST, DELETE_EVENT_SUCCESS, DELETE_EVENT_FAILURE
 } from "/src/State/Restaurant/ActionType.js";
@@ -127,32 +129,42 @@ export const createCategoryAction = ({ reqData, jwt }) => async (dispatch) => {
     }
 };
 
-export const createEventAction = ({ data, jwt, restaurantId }) => async (dispatch) => {
-    dispatch({ type: CREATE_EVENT_REQUEST });
-    try {
-        const res = await axios.post(`${API_URL}/api/admin/events/restaurant/${restaurantId}`, data, {
-            headers: {
-                Authorization: `Bearer ${jwt}`
-            }
-        });
-        dispatch({ type: CREATE_EVENT_SUCCESS, payload: res.data });
-    } catch (error) {
-        dispatch({ type: CREATE_EVENT_FAILURE, payload: error.message });
-    }
+export const createEventAction = ({ data, jwt, restaurantId }) => {
+    return async (dispatch) => {
+        dispatch({ type: CREATE_EVENTS_REQUEST });
+        try {
+            // Chú ý: Dấu backtick (`) để lấy đúng restaurantId gắn vào link
+            const res = await api.post(`/api/admin/events/restaurant/${restaurantId}`, data, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            console.log("Tạo sự kiện thành công:", res.data);
+            dispatch({ type: CREATE_EVENTS_SUCCESS, payload: res.data });
+        } catch (error) {
+            console.log("Lỗi tạo sự kiện:", error);
+            dispatch({ type: CREATE_EVENTS_FAILURE, payload: error });
+        }
+    };
 };
 
-export const getRestaurantsEvents = ({ restaurantId, jwt }) => async (dispatch) => {
-    dispatch({ type: GET_RESTAURANTS_EVENTS_REQUEST });
-    try {
-        const res = await axios.get(`${API_URL}/api/admin/events/restaurant/${restaurantId}`, {
-            headers: {
-                Authorization: `Bearer ${jwt}`
-            }
-        });
-        dispatch({ type: GET_RESTAURANTS_EVENTS_SUCCESS, payload: res.data });
-    } catch (error) {
-        dispatch({ type: GET_RESTAURANTS_EVENTS_FAILURE, payload: error.message });
-    }
+export const getRestaurantsEvents = ({ restaurantId, jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_RESTAURANTS_EVENTS_REQUEST });
+        try {
+            // Có thể backend của bạn không có /admin ở link GET này, hãy kiểm tra Java
+            const res = await api.get(`/api/events/restaurant/${restaurantId}`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            console.log("Lấy sự kiện thành công:", res.data);
+            dispatch({ type: GET_RESTAURANTS_EVENTS_SUCCESS, payload: res.data });
+        } catch (error) {
+            console.log("Lỗi lấy sự kiện:", error);
+            dispatch({ type: GET_RESTAURANTS_EVENTS_FAILURE, payload: error });
+        }
+    };
 };
 
 export const deleteEventAction = ({ eventId, jwt }) => async (dispatch) => {
