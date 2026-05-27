@@ -1,89 +1,59 @@
-import React, { useState } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, FormGroup, FormControlLabel, Checkbox, Button } from '@mui/material';
+import React from 'react';
+import { Accordion, AccordionSummary, AccordionDetails, Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useDispatch } from 'react-redux';
-import { addItemToCart } from '../../State/Cart/Action';
+import { addItemToCart } from '../../State/Cart/Action'; // Nhớ check đường dẫn kho Cart
 
-// Nhận món ăn (item) từ trang RestaurantDetails truyền vào
 export const MenuCard = ({ item }) => {
     const dispatch = useDispatch();
-    const [selectedIngredients, setSelectedIngredients] = useState([]);
-
-    const handleCheckBoxChange = (ingredientName) => {
-        if (selectedIngredients.includes(ingredientName)) {
-            setSelectedIngredients(selectedIngredients.filter((item) => item !== ingredientName));
-        } else {
-            setSelectedIngredients([...selectedIngredients, ingredientName]);
-        }
-    };
+    const jwt = localStorage.getItem("jwt");
 
     const handleAddItemToCart = (e) => {
         e.preventDefault();
         const reqData = {
-            token: localStorage.getItem("jwt"),
+            token: jwt,
             cartItem: {
                 foodId: item.id,
                 quantity: 1,
-                ingredients: selectedIngredients
+                ingredients: [] // Tạm thời nạp mảng rỗng, phần chọn nguyên liệu sẽ làm sau nếu cần
             }
         };
-        // Bắn action lưu vào giỏ hàng
         dispatch(addItemToCart(reqData));
-        console.log("Đã bấm thêm vào giỏ:", reqData);
+        console.log("Đã thêm vào giỏ hàng:", item.name);
     };
 
     return (
         <Accordion>
-            <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ color: "white" }} />} sx={{ backgroundColor: "#1f2937", color: "white" }}>
+            <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <div className='lg:flex items-center justify-between w-full'>
                     <div className='lg:flex items-center lg:gap-5'>
-                        <img className='w-[7rem] h-[7rem] object-cover rounded-md' src={item.images?.[0] || "https://images.pexels.com/photos/1146760/pexels-photo-1146760.jpeg"} alt={item.name} />
-                        <div className='space-y-1 lg:space-y-5 lg:max-w-2xl mt-3 lg:mt-0'>
+                        <img
+                            className='w-[7rem] h-[7rem] object-cover rounded-md'
+                            src={item.images?.[0] || "https://images.pexels.com/photos/1639562/pexels-photo-1639562.jpeg"}
+                            alt={item.name}
+                        />
+                        <div className='space-y-1 lg:space-y-3 lg:max-w-2xl'>
                             <p className='font-semibold text-xl'>{item.name}</p>
-                            <p className='text-pink-500 font-semibold'>{item.price} đ</p>
-                            <p className='text-gray-400'>{item.description}</p>
+                            <p className='text-gray-400 font-semibold'>{item.price}đ</p>
+                            <p className='text-gray-500 text-sm'>{item.description}</p>
                         </div>
                     </div>
                 </div>
             </AccordionSummary>
-            <AccordionDetails sx={{ backgroundColor: "#111827", color: "white" }}>
+            <AccordionDetails>
                 <form onSubmit={handleAddItemToCart}>
-                    <div className='flex gap-5 flex-wrap'>
-                        {/* Kiểm tra nếu Backend có trả về mảng ingredientsItem thì render */}
-                        {item.ingredientsItems && Object.keys(categorizeIngredients(item.ingredientsItems)).map((category) => (
-                            <div key={category}>
-                                <p className='font-semibold text-gray-300'>{category}</p>
-                                <FormGroup>
-                                    {categorizeIngredients(item.ingredientsItems)[category].map((ingredient) => (
-                                        <FormControlLabel
-                                            key={ingredient.name}
-                                            control={<Checkbox onChange={() => handleCheckBoxChange(ingredient.name)} sx={{ color: 'gray', '&.Mui-checked': { color: '#e91e63' } }} />}
-                                            label={ingredient.name}
-                                        />
-                                    ))}
-                                </FormGroup>
-                            </div>
-                        ))}
-                    </div>
-                    <div className='pt-5'>
-                        <Button variant="contained" type="submit" disabled={!item.available} sx={{ backgroundColor: "#e91e63", '&:hover': { backgroundColor: "#c2185b" } }}>
-                            {item.available ? "Thêm vào giỏ" : "Hết hàng"}
+                    <div className='pt-2'>
+                        <Button
+                            variant='contained'
+                            color='primary'
+                            disabled={!item.available}
+                            type='submit'
+                        >
+                            {item.available ? "Thêm vào giỏ hàng" : "Hết hàng"}
                         </Button>
                     </div>
                 </form>
             </AccordionDetails>
         </Accordion>
-    )
-}
-
-// Hàm hỗ trợ gom nhóm nguyên liệu (ví dụ: Đế bánh -> [Đế dày, Đế mỏng])
-const categorizeIngredients = (ingredients) => {
-    return ingredients.reduce((acc, ingredient) => {
-        const { category } = ingredient;
-        if (!acc[category.name]) {
-            acc[category.name] = [];
-        }
-        acc[category.name].push(ingredient);
-        return acc;
-    }, {});
+    );
 };
