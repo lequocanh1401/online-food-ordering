@@ -7,10 +7,11 @@ export const Ingredients = () => {
     return (
         <div className='px-2'>
             <Grid container spacing={2}>
-                <Grid item xs={12} lg={8}>
+                {/* Đổi item thành item="true" để React không báo lỗi DOM */}
+                <Grid item="true" xs={12} lg={8}>
                     <IngredientsTable />
                 </Grid>
-                <Grid item xs={12} lg={4}>
+                <Grid item="true" xs={12} lg={4}>
                     <IngredientCategoryTable />
                 </Grid>
             </Grid>
