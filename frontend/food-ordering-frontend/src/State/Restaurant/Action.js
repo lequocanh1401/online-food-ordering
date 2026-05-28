@@ -12,7 +12,8 @@ import {
     CREATE_EVENT_REQUEST, CREATE_EVENT_SUCCESS, CREATE_EVENT_FAILURE,
     CREATE_EVENTS_REQUEST, CREATE_EVENTS_SUCCESS, CREATE_EVENTS_FAILURE,
     GET_RESTAURANTS_EVENTS_REQUEST, GET_RESTAURANTS_EVENTS_SUCCESS, GET_RESTAURANTS_EVENTS_FAILURE,
-    DELETE_EVENT_REQUEST, DELETE_EVENT_SUCCESS, DELETE_EVENT_FAILURE
+    DELETE_EVENT_REQUEST, DELETE_EVENT_SUCCESS, DELETE_EVENT_FAILURE,
+    GET_ALL_EVENTS_REQUEST, GET_ALL_EVENTS_SUCCESS, GET_ALL_EVENTS_FAILURE
 } from "/src/State/Restaurant/ActionType.js";
 
 // ================= CÁC HÀM DÀNH CHO KHÁCH HÀNG =================
@@ -179,4 +180,22 @@ export const deleteEventAction = ({ eventId, jwt }) => async (dispatch) => {
     } catch (error) {
         dispatch({ type: DELETE_EVENT_FAILURE, payload: error.message });
     }
+};
+
+export const getAllEventsAction = ({ jwt }) => {
+    return async (dispatch) => {
+        dispatch({ type: GET_ALL_EVENTS_REQUEST });
+        try {
+            const res = await api.get(`/api/events`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            console.log("Kéo dữ liệu sự kiện thành công:", res.data);
+            dispatch({ type: GET_ALL_EVENTS_SUCCESS, payload: res.data });
+        } catch (error) {
+            console.log("Lỗi kéo sự kiện:", error);
+            dispatch({ type: GET_ALL_EVENTS_FAILURE, payload: error });
+        }
+    };
 };

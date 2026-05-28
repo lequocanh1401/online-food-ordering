@@ -72,6 +72,9 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(createdOrder);
         restaurant.getOrders().add(savedOrder);
 
+        // Làm sạch giỏ hàng của User sau khi đặt hàng thành công
+        cartService.clearCart(user.getId());
+
         return savedOrder;
     }
 
@@ -81,7 +84,8 @@ public class OrderServiceImpl implements OrderService {
         if(orderStatus.equals("OUT_FOR_DELIVERY") ||
                 orderStatus.equals("DELIVERED") ||
                 orderStatus.equals("COMPLETED") ||
-                orderStatus.equals("PENDING")) {
+                orderStatus.equals("PENDING") ||
+                orderStatus.equals("PAID")) {
             order.setOrderStatus(orderStatus);
             return orderRepository.save(order);
         }

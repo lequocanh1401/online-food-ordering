@@ -3,7 +3,11 @@ package com.anh.service;
 import com.anh.model.Category;
 import com.anh.model.Food;
 import com.anh.model.Restaurant;
+import com.anh.model.CartItem;
+import com.anh.model.OrderItem;
 import com.anh.repository.FoodRepository;
+import com.anh.repository.CartItemRepository;
+import com.anh.repository.OrderItemRepository;
 import com.anh.request.CreateFoodRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +22,12 @@ public class FoodServiceImpl implements FoodService {
 
     @Autowired
     private FoodRepository foodRepository;
+
+    @Autowired
+    private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private OrderItemRepository orderItemRepository;
 
     @Override
     public Food createFood(CreateFoodRequest req, Category category, Restaurant restaurant) {
@@ -44,9 +54,34 @@ public class FoodServiceImpl implements FoodService {
     @Override
     public void deleteFood(Long foodId) throws Exception {
         Food food = findFoodById(foodId);
-        // Ngắt liên kết món ăn khỏi nhà hàng trước khi xóa để tránh lỗi khóa ngoại
-        food.setRestaurant(null);
-        foodRepository.save(food);
+        
+        // 1. Xóa món ăn khỏi các giỏ hàng hiện tại
+        List<CartItem> cartItems = cartItemRepository.findAll().stream()
+                .filter(item -> item.getFood() != null && item.getFood().getId().equals(foodId))
+                .toList();
+        for (CartItem cartItem : cartItems) {
+            if (cartItem.getCart() != null) {
+                cartItem.getCart().getItem().remove(cartItem);
+            }
+            cartItemRepository.delete(cartItem);
+        }
+
+        // 2. Xóa liên kết món ăn trong các đơn hàng cũ (giữ lịch sử)
+        List<OrderItem> orderItems = orderItemRepository.findAll().stream()
+                .filter(item -> item.getFood() != null && item.getFood().getId().equals(foodId))
+                .toList();
+        for (OrderItem orderItem : orderItems) {
+            orderItem.setFood(null);
+            orderItemRepository.save(orderItem);
+        }
+
+        // 3. Ngắt liên kết món ăn khỏi nhà hàng trước khi xóa để tránh lỗi khóa ngoại
+        Restaurant restaurant = food.getRestaurant();
+        if (restaurant != null) {
+            restaurant.getFoods().remove(food);
+            food.setRestaurant(null);
+        }
+        
         foodRepository.delete(food);
     }
 
