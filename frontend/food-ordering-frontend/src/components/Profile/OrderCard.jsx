@@ -1,19 +1,33 @@
 import React from 'react';
 import { Button, Card } from '@mui/material';
 
-export const OrderCard = () => {
+export const OrderCard = ({ item, orderStatus }) => {
     return (
-        <Card className='flex justify-between items-center p-5 bg-gray-800 text-white w-full lg:w-[60vw]'>
+        <Card className='flex justify-between items-center p-5 bg-gray-900 text-white border border-gray-800 shadow-md'>
             <div className='flex items-center space-x-5'>
-                <img className='h-16 w-16 object-cover' src="https://images.pexels.com/photos/1146760/pexels-photo-1146760.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Food" />
+                <img
+                    className='h-16 w-16 object-cover rounded'
+                    src={item.food?.images?.[0] || "https://images.pexels.com/photos/1639562/pexels-photo-1639562.jpeg"}
+                    alt={item.food?.name}
+                />
                 <div>
-                    <p className='font-semibold text-lg'>Pizza Thập Cẩm</p>
-                    <p className='text-gray-400 text-sm'>150,000 đ</p>
+                    <p className='text-xl font-semibold'>{item.food?.name}</p>
+                    <p className='text-gray-400'>{(item.totalPrice)}đ</p>
                 </div>
             </div>
             <div>
-                <Button disabled className='bg-green-600 text-white px-3 py-1 rounded'>
-                    Đã giao
+                <Button
+                    variant='contained'
+                    disabled
+                    sx={{
+                        color: orderStatus === 'COMPLETED' || orderStatus === 'DELIVERED' ? '#4caf50' : '#ff9800',
+                        backgroundColor: 'transparent !important',
+                        fontWeight: 'bold',
+                        border: '1px solid',
+                        borderColor: orderStatus === 'COMPLETED' || orderStatus === 'DELIVERED' ? '#4caf50' : '#ff9800'
+                    }}
+                >
+                    {orderStatus}
                 </Button>
             </div>
         </Card>
