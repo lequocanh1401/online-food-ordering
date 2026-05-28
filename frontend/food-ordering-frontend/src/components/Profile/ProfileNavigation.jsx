@@ -3,44 +3,68 @@ import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import HomeIcon from '@mui/icons-material/Home';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import EventIcon from '@mui/icons-material/Event';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { Divider } from '@mui/material';
+import { Divider, Drawer, useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logout } from '../../State/Authentication/Action'; // Đảm bảo bạn có hàm logout ở đây
 
 const menu = [
-    { title: "Orders", icon: <ShoppingBagIcon /> },
-    { title: "Favorites", icon: <FavoriteIcon /> },
-    { title: "Address", icon: <HomeIcon /> },
-    { title: "Payments", icon: <AccountBalanceWalletIcon /> },
-    { title: "Notification", icon: <NotificationsIcon /> },
-    { title: "Events", icon: <EventIcon /> },
-    { title: "Logout", icon: <LogoutIcon /> }
+    { title: "Đơn hàng", icon: <ShoppingBagIcon /> },
+    { title: "Yêu thích", icon: <FavoriteIcon /> },
+    { title: "Địa chỉ", icon: <HomeIcon /> },
+    { title: "Thanh toán", icon: <AccountBalanceWalletIcon /> },
+    { title: "Thông báo", icon: <NotificationsActiveIcon /> },
+    { title: "Sự kiện", icon: <EventIcon /> },
+    { title: "Đăng xuất", icon: <LogoutIcon /> }
 ];
 
-export const ProfileNavigation = () => {
+export const ProfileNavigation = ({ open, handleClose }) => {
+    const isSmallScreen = useMediaQuery('(max-width:900px)');
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
     const handleNavigate = (item) => {
-        if (item.title === "Logout") {
+        if (item.title === "Đăng xuất") {
+            dispatch(logout());
             navigate("/");
         } else {
-            navigate(`/my-profile/${item.title.toLowerCase()}`);
+            // Chuyển đổi tên menu sang đường dẫn URL tương ứng
+            const pathMap = {
+                "Đơn hàng": "orders",
+                "Yêu thích": "favorites",
+                "Địa chỉ": "address",
+                "Thanh toán": "payments",
+                "Thông báo": "notifications",
+                "Sự kiện": "events"
+            };
+            navigate(`/my-profile/${pathMap[item.title]}`);
         }
     };
 
     return (
-        <div className='w-full lg:w-[20vw] flex flex-col justify-center text-xl gap-8 h-[90vh] pt-16 bg-gray-800 text-white px-5'>
-            {menu.map((item, index) => (
-                <React.Fragment key={index}>
-                    <div onClick={() => handleNavigate(item)} className='flex items-center space-x-5 cursor-pointer hover:text-pink-500 transition-all'>
-                        {item.icon}
-                        <span>{item.title}</span>
-                    </div>
-                    {index !== menu.length - 1 && <Divider className='bg-gray-700' />}
-                </React.Fragment>
-            ))}
+        <div>
+            <Drawer
+                variant={isSmallScreen ? "temporary" : "permanent"}
+                onClose={handleClose}
+                open={isSmallScreen ? open : true}
+                anchor='left'
+                sx={{ zIndex: 1, position: "sticky" }}
+            >
+                <div className='w-[50vw] lg:w-[20vw] h-[100vh] flex flex-col justify-center text-xl gap-8 pt-16 bg-gray-900 text-white'>
+                    {menu.map((item, i) => (
+                        <React.Fragment key={i}>
+                            <div onClick={() => handleNavigate(item)} className='px-5 flex items-center space-x-5 cursor-pointer hover:text-pink-500 transition-colors'>
+                                {item.icon}
+                                <span>{item.title}</span>
+                            </div>
+                            {i !== menu.length - 1 && <Divider sx={{ bgcolor: "gray" }} />}
+                        </React.Fragment>
+                    ))}
+                </div>
+            </Drawer>
         </div>
     );
 };

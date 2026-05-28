@@ -1,124 +1,130 @@
-import React, { useState } from 'react';
-import { Divider, Button, Card, TextField, Modal, Box } from '@mui/material';
-import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
-import { Formik, Field, Form, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
-import { CartItem } from './CartItem';
+import React, { useEffect } from 'react';
+import { Box, Button, Card, Divider, Grid, TextField, IconButton } from '@mui/material';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { createOrder } from '../../State/Order/Action';
-
-const style = {
-    position: 'absolute', top: '50%', left: '50%',
-    transform: 'translate(-50%, -50%)', width: 400,
-    bgcolor: 'background.paper', outline: "none",
-    boxShadow: 24, p: 4, borderRadius: 2
-};
-
-const initialValues = { streetAddress: "", state: "", city: "", pincode: "" };
-const validationSchema = Yup.object().shape({
-    streetAddress: Yup.string().required("Vui lòng nhập địa chỉ cụ thể"),
-    state: Yup.string().required("Vui lòng nhập Tỉnh / Thành phố"),
-    city: Yup.string().required("Vui lòng nhập Quận / Huyện"),
-    pincode: Yup.string().required("Vui lòng nhập mã bưu điện")
-});
+import { updateCartItem, removeCartItem, findUserCart } from '../../State/Cart/Action';
 
 export const Cart = () => {
-    const [open, setOpen] = useState(false);
-
-    const cart = useSelector(store => store.cart);
-    const auth = useSelector(store => store.auth);
     const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
 
-    const handleOpenAddressModal = () => setOpen(true);
-    const handleClose = () => setOpen(false);
+    // Rút kho giỏ hàng ra
+    const cartData = useSelector(store => store.cart);
 
-    const handleSubmit = (values) => {
-        const data = {
-            jwt: localStorage.getItem("jwt"),
-            order: {
-                restaurantId: cart.cartItems[0]?.food?.restaurant?.id,
-                deliveryAddress: {
-                    fullName: auth.user?.fullName,
+    // 👇 BỘ LỌC THÔNG MINH: Tự động vét sạch dữ liệu dù backend đặt tên là gì
+    const cartItems = cartData.cartItems || cartData.cart?.item || cartData.cart?.items || [];
+    const cartTotal = cartData.cart?.total || cartData.cart?.totalPrice || 0;
+
+    useEffect(() => {
+        if (jwt) {
+            dispatch(findUserCart(jwt));
+        }
+    }, [dispatch, jwt]);
+
+    const formik = useFormik({
+        initialValues: { streetAddress: "", state: "", pincode: "", city: "" },
+        onSubmit: (values) => {
+            const reqData = {
+                address: {
                     streetAddress: values.streetAddress,
                     city: values.city,
                     state: values.state,
                     postalCode: values.pincode,
                     country: "Vietnam"
-                }
-            }
-        };
-        dispatch(createOrder(data));
-        console.log("Submit Đặt Hàng: ", data);
-        handleClose();
+                },
+                restaurantId: cartItems[0]?.food?.restaurant?.id
+            };
+            console.log("Đang gửi API Đặt Hàng:", reqData);
+            dispatch(createOrder({ reqData, jwt }));
+            formik.resetForm();
+        }
+    });
+
+    const handleUpdateCartItem = (cartItemId, quantity) => {
+        if (quantity === 0) {
+            dispatch(removeCartItem({ cartItemId, jwt }));
+        } else {
+            dispatch(updateCartItem({ cartItemId, quantity, jwt }));
+        }
     };
 
     return (
-        <div className='min-h-screen pt-5'>
-            <main className='lg:flex justify-between'>
-                <section className='lg:w-[30%] space-y-6 lg:min-h-screen pt-10'>
-                    {Array.isArray(cart.cartItems) && cart.cartItems.map((item) => (
-                        <CartItem key={item.id} item={item} />
-                    ))}
+        <div className='text-white min-h-screen p-5 lg:px-20'>
+            <main className='lg:flex justify-between gap-10 mt-10'>
 
-                    <Divider className="bg-gray-700" />
+                {/* CỘT TRÁI: DANH SÁCH MÓN ĂN */}
+                <section className='lg:w-[40%] space-y-6 pb-10'>
+                    <h1 className='text-2xl font-semibold border-b border-gray-800 pb-3'>Giỏ Hàng Của Bạn</h1>
 
-                    <div className='billDetails px-5 text-sm'>
-                        <p className='font-semibold py-5 text-white'>Hóa Đơn Chi Tiết</p>
-                        <div className='space-y-3'>
-                            <div className='flex justify-between text-gray-400'>
-                                <p>Tổng tiền món</p>
-                                <p>{cart.cart?.total || 0} đ</p>
-                            </div>
-                            <div className='flex justify-between text-gray-400'>
-                                <p>Phí giao hàng</p>
-                                <p>30000 đ</p>
-                            </div>
-                            <Divider className="bg-gray-700" />
-                            <div className='flex justify-between text-white pb-5 font-semibold text-lg'>
-                                <p>Tổng cộng</p>
-                                <p>{(cart.cart?.total || 0) + 30000} đ</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <Divider orientation='vertical' flexItem className="bg-gray-700 hidden lg:block" />
-
-                <section className='lg:w-[70%] flex justify-center px-5 pb-10 lg:pb-0'>
-                    <div>
-                        <h1 className='text-center font-semibold text-2xl py-10 text-white'>Chọn Địa Chỉ Giao Hàng</h1>
-                        <div className='flex gap-5 flex-wrap justify-center'>
-                            <Card className="flex gap-5 w-64 p-5 items-center justify-center cursor-pointer bg-gray-800 text-white hover:bg-gray-700 transition-all" onClick={handleOpenAddressModal}>
-                                <div className='flex flex-col items-center'>
-                                    <AddLocationAltIcon fontSize="large" className="text-pink-500" />
-                                    <p className='font-semibold mt-2'>Thêm địa chỉ mới</p>
+                    {cartItems.length === 0 ? (
+                        <p className='text-gray-400 mt-5'>Giỏ hàng đang trống rỗng. Hãy quay lại chọn món nhé!</p>
+                    ) : (
+                        cartItems.map((item) => (
+                            <Card key={item.id} className='p-5 bg-gray-950 border border-gray-800 flex justify-between items-center text-white'>
+                                <div className='flex items-center gap-5'>
+                                    <img className='w-[5rem] h-[5rem] object-cover rounded' src={item.food?.images?.[0]} alt="" />
+                                    <div className='space-y-1'>
+                                        <p className='font-semibold text-lg'>{item.food?.name}</p>
+                                        <p className='text-gray-400'>{item.totalPrice}đ</p>
+                                    </div>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                    <IconButton onClick={() => handleUpdateCartItem(item.id, item.quantity - 1)} color="primary">
+                                        <RemoveCircleIcon />
+                                    </IconButton>
+                                    <span className='font-semibold'>{item.quantity}</span>
+                                    <IconButton onClick={() => handleUpdateCartItem(item.id, item.quantity + 1)} color="primary">
+                                        <AddCircleIcon />
+                                    </IconButton>
                                 </div>
                             </Card>
-                        </div>
+                        ))
+                    )}
+                    <Divider sx={{ bgcolor: "gray" }} />
+                    <div className='flex justify-between font-semibold text-xl px-2'>
+                        <p>Tổng thanh toán:</p>
+                        <p className='text-pink-500'>{cartTotal}đ</p>
                     </div>
                 </section>
-            </main>
 
-            <Modal open={open} onClose={handleClose}>
-                <Box sx={style}>
-                    <h2 className="text-xl font-semibold mb-5 text-gray-800">Thêm Địa Chỉ Mới</h2>
-                    <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
-                        {({ touched, errors }) => (
-                            <Form className="space-y-4">
-                                <Field as={TextField} name="streetAddress" label="Số nhà, Tên đường" fullWidth variant="outlined" error={touched.streetAddress && Boolean(errors.streetAddress)} helperText={<ErrorMessage name="streetAddress" />} />
-                                <div className='flex gap-4'>
-                                    <Field as={TextField} name="city" label="Quận / Huyện" fullWidth variant="outlined" error={touched.city && Boolean(errors.city)} helperText={<ErrorMessage name="city" />} />
-                                    <Field as={TextField} name="state" label="Tỉnh / Thành phố" fullWidth variant="outlined" error={touched.state && Boolean(errors.state)} helperText={<ErrorMessage name="state" />} />
-                                </div>
-                                <Field as={TextField} name="pincode" label="Mã bưu điện" fullWidth variant="outlined" error={touched.pincode && Boolean(errors.pincode)} helperText={<ErrorMessage name="pincode" />} />
-                                <Button fullWidth variant="contained" type="submit" color="primary" sx={{ mt: 2, py: 1.5 }}>
-                                    Giao Hàng Tới Đây
+                <Divider orientation='vertical' flexItem sx={{ bgcolor: "gray", display: { xs: 'none', lg: 'block' } }} />
+
+                {/* CỘT PHẢI: ĐỊA CHỈ */}
+                <section className='lg:w-[50%] space-y-6'>
+                    <h1 className='text-2xl font-semibold border-b border-gray-800 pb-3'>Thông Tin Giao Hàng</h1>
+                    <form onSubmit={formik.handleSubmit} className='space-y-5 bg-gray-900 p-6 rounded-lg border border-gray-800 shadow-xl'>
+                        <Grid container spacing={3}>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Địa chỉ nhà (Số nhà, tên đường)" name="streetAddress" value={formik.values.streetAddress} onChange={formik.handleChange} />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField fullWidth label="Quận / Huyện" name="state" value={formik.values.state} onChange={formik.handleChange} />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField fullWidth label="Thành phố" name="city" value={formik.values.city} onChange={formik.handleChange} />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField fullWidth label="Mã Bưu Điện" name="pincode" value={formik.values.pincode} onChange={formik.handleChange} />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <Button
+                                    variant='contained'
+                                    color='primary'
+                                    type='submit'
+                                    fullWidth
+                                    size='large'
+                                    disabled={cartItems.length === 0}
+                                >
+                                    Xác Nhận Đặt Hàng
                                 </Button>
-                            </Form>
-                        )}
-                    </Formik>
-                </Box>
-            </Modal>
+                            </Grid>
+                        </Grid>
+                    </form>
+                </section>
+            </main>
         </div>
-    )
-}
+    );
+};

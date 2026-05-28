@@ -1,25 +1,27 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ProfileNavigation } from './ProfileNavigation';
-import { Routes, Route } from 'react-router-dom';
-import { UserProfile } from './UserProfile';
-import { Orders } from './Orders';
-import { Favorites } from './Favorites';
-import { Events } from './Events';
-import { AddressCard } from '../Cart/AddressCard';
+import { Route, Routes } from 'react-router-dom';
+// Tạm thời comment các trang con lại, lát nữa làm tới đâu mở tới đó
+// import { Orders } from './Orders';
+// import { Favorites } from './Favorites';
+// import { UserAddress } from './UserAddress';
 
 export const Profile = () => {
+    const [openSideBar, setOpenSideBar] = useState(false);
+
     return (
-        <div className='lg:flex justify-between'>
-            <div className='sticky top-0 lg:w-[20vw]'>
-                <ProfileNavigation />
+        <div className='lg:flex justify-between min-h-screen bg-black text-white'>
+            {/* Thanh Sidebar bên trái */}
+            <div className='sticky h-[80vh] lg:w-[20%]'>
+                <ProfileNavigation open={openSideBar} handleClose={() => setOpenSideBar(false)} />
             </div>
-            <div className='lg:w-[80vw] min-h-[80vh] bg-gray-900 pb-10'>
+
+            {/* Nội dung thay đổi bên phải */}
+            <div className='lg:w-[80%] mt-5 lg:mt-0'>
                 <Routes>
-                    <Route path='/' element={<UserProfile />} />
-                    <Route path='/orders' element={<Orders />} />
-                    <Route path='/favorites' element={<Favorites />} />
-                    <Route path='/address' element={<div className='flex flex-wrap gap-5 justify-center pt-10'><AddressCard showButton={false} /></div>} />
-                    <Route path='/events' element={<Events />} />
+                    {/* <Route path='/orders' element={<Orders />} /> */}
+                    {/* <Route path='/favorites' element={<Favorites />} /> */}
+                    {/* <Route path='/address' element={<UserAddress />} /> */}
                 </Routes>
             </div>
         </div>

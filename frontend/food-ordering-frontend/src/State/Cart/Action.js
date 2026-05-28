@@ -1,3 +1,4 @@
+import { api } from "../../config/api";
 import axios from "axios";
 import { API_URL } from "../../config/api";
 import {
@@ -37,31 +38,46 @@ export const getAllCartItems = (reqData) => async (dispatch) => {
 };
 
 // 3. Thêm món vào giỏ
-export const addItemToCart = (reqData) => async (dispatch) => {
-    dispatch({ type: ADD_ITEM_TO_CART_REQUEST });
-    try {
-        const { data } = await axios.put(`${API_URL}/api/cart/add`, reqData.cartItem, {
-            headers: { Authorization: `Bearer ${reqData.token}` },
-        });
-        dispatch({ type: ADD_ITEM_TO_CART_SUCCESS, payload: data });
-        console.log("Thêm vào giỏ thành công", data);
-    } catch (error) {
-        dispatch({ type: ADD_ITEM_TO_CART_FAILURE, payload: error });
-    }
+export const addItemToCart = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: ADD_ITEM_TO_CART_REQUEST });
+        try {
+            // Zosh thường dùng lệnh PUT cho việc thêm món vào giỏ
+            const res = await api.put(`/api/cart/add`, reqData.reqData, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`,
+                },
+            });
+            console.log("Đã thêm món vào giỏ hàng thành công:", res.data);
+            dispatch({ type: ADD_ITEM_TO_CART_SUCCESS, payload: res.data });
+        } catch (error) {
+            console.log("Lỗi thêm vào giỏ hàng:", error);
+            dispatch({ type: ADD_ITEM_TO_CART_FAILURE, payload: error.message });
+        }
+    };
 };
 
 // 4. Cập nhật số lượng món (Tăng / Giảm)
-export const updateCartItem = (reqData) => async (dispatch) => {
-    dispatch({ type: UPDATE_CARTITEM_REQUEST });
-    try {
-        const { data } = await axios.put(`${API_URL}/api/cart-item/update`, reqData.data, {
-            headers: { Authorization: `Bearer ${reqData.jwt}` },
-        });
-        dispatch({ type: UPDATE_CARTITEM_SUCCESS, payload: data });
-        console.log("Cập nhật giỏ hàng thành công", data);
-    } catch (error) {
-        dispatch({ type: UPDATE_CARTITEM_FAILURE, payload: error });
-    }
+export const updateCartItem = (reqData) => {
+    return async (dispatch) => {
+        dispatch({ type: UPDATE_CARTITEM_REQUEST });
+        try {
+            // 👇 SỬA TẠI ĐÂY: Chỉ gửi cartItemId và quantity xuống body, tách jwt ra ngoài
+            const res = await api.put(`/api/cart-item/update`, {
+                cartItemId: reqData.cartItemId,
+                quantity: reqData.quantity
+            }, {
+                headers: {
+                    Authorization: `Bearer ${reqData.jwt}`,
+                },
+            });
+            console.log("Cập nhật số lượng thành công:", res.data);
+            dispatch({ type: UPDATE_CARTITEM_SUCCESS, payload: res.data });
+        } catch (error) {
+            console.log("Lỗi cập nhật số lượng:", error);
+            dispatch({ type: UPDATE_CARTITEM_FAILURE, payload: error.message });
+        }
+    };
 };
 
 // 5. Xóa món khỏi giỏ
@@ -90,4 +106,22 @@ export const clearCartAction = () => async (dispatch) => {
     } catch (error) {
         dispatch({ type: CLEAR_CART_FAILURE, payload: error });
     }
+};
+
+export const findUserCart = (jwt) => {
+    return async (dispatch) => {
+        dispatch({ type: FIND_CART_REQUEST });
+        try {
+            const res = await api.get(`/api/cart`, {
+                headers: {
+                    Authorization: `Bearer ${jwt}`,
+                },
+            });
+            console.log("Dữ liệu giỏ hàng kéo từ Java về:", res.data);
+            dispatch({ type: FIND_CART_SUCCESS, payload: res.data });
+        } catch (error) {
+            console.log("Lỗi kéo giỏ hàng:", error);
+            dispatch({ type: FIND_CART_FAILURE, payload: error });
+        }
+    };
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { Accordion, AccordionSummary, AccordionDetails, Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useDispatch } from 'react-redux';
-import { addItemToCart } from '../../State/Cart/Action'; // Nhớ check đường dẫn kho Cart
+import { addItemToCart } from '../../State/Cart/Action';
 
 export const MenuCard = ({ item }) => {
     const dispatch = useDispatch();
@@ -10,16 +10,17 @@ export const MenuCard = ({ item }) => {
 
     const handleAddItemToCart = (e) => {
         e.preventDefault();
+
+        // 👇 SỬA TẠI ĐÂY: reqData chỉ chứa thông tin món ăn đúng chuẩn API Spring Boot cần
         const reqData = {
-            token: jwt,
-            cartItem: {
-                foodId: item.id,
-                quantity: 1,
-                ingredients: [] // Tạm thời nạp mảng rỗng, phần chọn nguyên liệu sẽ làm sau nếu cần
-            }
+            foodId: item.id,
+            quantity: 1,
+            ingredients: []
         };
-        dispatch(addItemToCart(reqData));
-        console.log("Đã thêm vào giỏ hàng:", item.name);
+
+        // 👇 Truyền tách biệt reqData và jwt vào object wrapper của Action
+        dispatch(addItemToCart({ reqData, jwt }));
+        console.log("Đang kích hoạt API thêm vào giỏ hàng:", reqData);
     };
 
     return (
