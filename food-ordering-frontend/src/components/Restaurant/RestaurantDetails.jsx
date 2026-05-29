@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Divider, FormControl, FormControlLabel, Radio, RadioGroup, Typography } from '@mui/material';
+import { Divider, FormControl, FormControlLabel, Radio, RadioGroup, Typography, Card, Avatar, Chip, Button } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import { MenuCard } from './MenuCard';
@@ -7,6 +7,8 @@ import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRestaurantById, getRestaurantsCategory } from '../../State/Restaurant/Action';
 import { getMenuItemsByRestaurantId } from '../../State/Menu/Action';
+import { getRestaurantReviews } from '../../State/Review/Action';
+import { ReviewModal } from './ReviewModal';
 
 const foodTypes = [
     { label: "Tất cả", value: "all" },
@@ -18,6 +20,7 @@ const foodTypes = [
 export const RestaurantDetails = () => {
     const [foodType, setFoodType] = useState("all");
     const [foodCategory, setFoodCategory] = useState("");
+    const [openReviewModal, setOpenReviewModal] = useState(false);
 
     // Rút id nhà hàng từ thanh URL (VD: /restaurant/hanoi/zosh/1)
     const { id } = useParams();
@@ -26,12 +29,14 @@ export const RestaurantDetails = () => {
 
     const restaurant = useSelector(store => store.restaurant);
     const menu = useSelector(store => store.menu);
+    const review = useSelector(store => store.review);
 
-    // Kéo thông tin chi tiết quán + danh mục món ăn
+    // Kéo thông tin chi tiết quán + danh mục món ăn + đánh giá
     useEffect(() => {
         if (id) {
             dispatch(getRestaurantById({ jwt, restaurantId: id }));
             dispatch(getRestaurantsCategory({ jwt, restaurantId: id }));
+            dispatch(getRestaurantReviews({ restaurantId: id }));
         }
     }, [dispatch, jwt, id]);
 
@@ -58,7 +63,15 @@ export const RestaurantDetails = () => {
                     <img className='w-full h-[40vh] object-cover rounded-lg' src={restaurant.restaurant?.images?.[0] || "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg"} alt="" />
                 </div>
                 <div className='pt-3 pb-5'>
-                    <h1 className='text-4xl font-semibold'>{restaurant.restaurant?.name}</h1>
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <h1 className='text-4xl font-semibold flex flex-wrap items-center gap-3'>
+                            {restaurant.restaurant?.name}
+                            <span className="text-xl text-yellow-500 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30 flex items-center gap-1">
+                                ⭐ {review.totalReviews > 0 ? review.averageRating : "Chưa có đánh giá"} 
+                                {review.totalReviews > 0 && <span className="text-gray-400 text-sm font-normal">({review.totalReviews} đánh giá)</span>}
+                            </span>
+                        </h1>
+                    </div>
                     <p className='text-gray-500 mt-1'>{restaurant.restaurant?.description}</p>
                     <div className='space-y-3 mt-3'>
                         <p className='text-gray-500 flex items-center gap-3'>
@@ -105,10 +118,75 @@ export const RestaurantDetails = () => {
                 </div>
 
                 {/* Cột phải: Danh sách thực đơn */}
-                <div className='space-y-5 lg:w-[80%] lg:pl-10 pb-20 mt-10 lg:mt-0'>
-                    {menu.menuItems?.map((item) => <MenuCard key={item.id} item={item} />)}
+                <div className='space-y-5 lg:w-[80%] lg:pl-10 pb-10 mt-10 lg:mt-0'>
+                    {menu.menuItems?.map((item) => <MenuCard key={item.id} item={item} restaurantId={id} />)}
                 </div>
             </section>
+
+            {/* Review Section */}
+            <Divider sx={{ bgcolor: "gray", my: 5 }} />
+            <section className="pb-20">
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-50 flex items-center gap-2">
+                            Đánh Giá & Nhận Xét từ Khách Hàng
+                        </h2>
+                        {review.totalReviews > 0 && (
+                            <p className="text-gray-400 text-sm mt-1">
+                                Đánh giá trung bình: {review.averageRating} / 5 ⭐ ({review.totalReviews} lượt đánh giá)
+                            </p>
+                        )}
+                    </div>
+                    <Button 
+                        variant="contained" 
+                        onClick={() => setOpenReviewModal(true)}
+                        sx={{ bgcolor: '#e91e63', '&:hover': { bgcolor: '#ad1457' } }}
+                    >
+                        Viết đánh giá
+                    </Button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {review.reviews?.map((r) => (
+                        <Card key={r.id} sx={{ bgcolor: '#111827', border: '1px solid #1f2937', color: 'white', borderRadius: 2 }} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                    <Avatar sx={{ bgcolor: '#e91e63' }}>{r.customer?.fullName?.[0]}</Avatar>
+                                    <div>
+                                        <Typography className="font-semibold text-sm text-gray-200">{r.customer?.fullName}</Typography>
+                                        <Typography variant="caption" className="text-gray-500">
+                                            {r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : ""}
+                                        </Typography>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20 text-yellow-500 text-sm font-semibold">
+                                    ⭐ {r.rating}
+                                </div>
+                            </div>
+                            {r.food && (
+                                <Chip 
+                                    label={`Món: ${r.food.name}`} 
+                                    size="small" 
+                                    sx={{ mt: 1.5, bgcolor: '#1f2937', color: '#ff9800', border: '1px solid rgba(255,152,0,0.2)' }} 
+                                />
+                            )}
+                            <Typography className="text-gray-300 text-sm mt-3">{r.comment}</Typography>
+                        </Card>
+                    ))}
+                    {(!review.reviews || review.reviews.length === 0) && (
+                        <div className="col-span-2 text-center py-10 text-gray-500 border border-dashed border-gray-800 rounded-lg">
+                            Chưa có đánh giá nào cho nhà hàng này. Hãy trở thành người đầu tiên đánh giá!
+                        </div>
+                    )}
+                </div>
+            </section>
+
+            <ReviewModal 
+                open={openReviewModal} 
+                handleClose={() => setOpenReviewModal(false)} 
+                restaurantId={id} 
+                onSuccess={() => dispatch(getRestaurantReviews({ restaurantId: id }))} 
+            />
         </div>
     );
 };

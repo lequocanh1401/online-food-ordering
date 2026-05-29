@@ -1,0 +1,25 @@
+package com.anh.repository;
+
+import com.anh.model.Review;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import java.util.List;
+
+public interface ReviewRepository extends JpaRepository<Review, Long> {
+    List<Review> findByRestaurantIdOrderByCreatedAtDesc(Long restaurantId);
+    
+    List<Review> findByFoodIdOrderByCreatedAtDesc(Long foodId);
+    
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.restaurant.id = :restaurantId")
+    Double getAverageRatingForRestaurant(@Param("restaurantId") Long restaurantId);
+    
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.food.id = :foodId")
+    Double getAverageRatingForFood(@Param("foodId") Long foodId);
+    
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.restaurant.id = :restaurantId")
+    Long getCountForRestaurant(@Param("restaurantId") Long restaurantId);
+    
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.food.id = :foodId")
+    Long getCountForFood(@Param("foodId") Long foodId);
+}
