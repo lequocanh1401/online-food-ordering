@@ -14,7 +14,7 @@ export const Cart = () => {
     // Rút kho giỏ hàng ra
     const cartData = useSelector(store => store.cart);
 
-    // 👇 BỘ LỌC THÔNG MINH: Tự động vét sạch dữ liệu dù backend đặt tên là gì
+    // Bộ lọc vét dữ liệu
     const cartItems = cartData.cartItems || cartData.cart?.item || cartData.cart?.items || [];
     const cartTotal = cartData.cart?.total || cartData.cart?.totalPrice || 0;
 
@@ -28,10 +28,11 @@ export const Cart = () => {
         initialValues: { streetAddress: "", state: "", pincode: "", city: "" },
         onSubmit: (values) => {
             const reqData = {
-                address: {
+                // ĐÃ SỬA: Đổi 'address' thành 'deliveryAddress' để khớp 100% với Spring Boot
+                deliveryAddress: {
                     streetAddress: values.streetAddress,
                     city: values.city,
-                    state: values.state,
+                    stateProvince: values.state, // Map sang tên biến chuẩn của backend
                     postalCode: values.pincode,
                     country: "Vietnam"
                 },
@@ -49,6 +50,12 @@ export const Cart = () => {
         } else {
             dispatch(updateCartItem({ cartItemId, quantity, jwt }));
         }
+
+        // Dùng setTimeout ép React chờ 300ms cho Backend tính toán xong 
+        // rồi mới tự động kéo giỏ hàng mới về
+        setTimeout(() => {
+            dispatch(findUserCart(jwt));
+        }, 300);
     };
 
     return (
@@ -68,7 +75,7 @@ export const Cart = () => {
                                     <img className='w-[5rem] h-[5rem] object-cover rounded' src={item.food?.images?.[0]} alt="" />
                                     <div className='space-y-1'>
                                         <p className='font-semibold text-lg'>{item.food?.name}</p>
-                                        <p className='text-gray-400'>{item.totalPrice}đ</p>
+                                        <p className='text-gray-400'>{item.food?.price * item.quantity}$</p>
                                     </div>
                                 </div>
                                 <div className='flex items-center gap-2'>

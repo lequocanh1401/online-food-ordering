@@ -27,7 +27,8 @@ public class JwtTokenValidator extends OncePerRequestFilter {
 
         String jwt = request.getHeader(JwtConstant.JWT_HEADER);
 
-        if (jwt != null) {
+        // BỘ LỌC CHỐNG LỖI "Bearer null" TỪ REACT
+        if (jwt != null && jwt.startsWith("Bearer ") && !jwt.equals("Bearer null") && !jwt.equals("Bearer undefined")) {
             jwt = jwt.substring(7); // Bỏ chữ "Bearer "
             try {
                 SecretKey key = Keys.hmacShaKeyFor(JwtConstant.SECRET_KEY.getBytes());

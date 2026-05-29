@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-OnlineFoodOrderingApplication<Online-Food-Ordering>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.anh.OnlineFoodOrderingApplication",
+            "projectName": "Online-Food-Ordering",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

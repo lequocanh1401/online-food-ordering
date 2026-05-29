@@ -23,29 +23,23 @@ public class RestaurantController {
 
     @GetMapping("/search")
     public ResponseEntity<List<Restaurant>> searchRestaurant(
-            @RequestHeader("Authorization") String jwt,
             @RequestParam String keyword) throws Exception {
-
-        User user = userService.findUserByJwtToken(jwt);
+        // Đã gỡ bỏ biến jwt thừa thãi
         List<Restaurant> restaurant = restaurantService.searchRestaurant(keyword);
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
     }
 
     @GetMapping()
-    public ResponseEntity<List<Restaurant>> getAllRestaurant(
-            @RequestHeader("Authorization") String jwt) throws Exception {
-
-        User user = userService.findUserByJwtToken(jwt);
+    public ResponseEntity<List<Restaurant>> getAllRestaurant() throws Exception {
+        // Khách chưa đăng nhập vẫn gọi được API này bình thường
         List<Restaurant> restaurant = restaurantService.getAllRestaurant();
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Restaurant> findRestaurantById(
-            @RequestHeader("Authorization") String jwt,
             @PathVariable Long id) throws Exception {
-
-        User user = userService.findUserByJwtToken(jwt);
+        // Đã gỡ bỏ biến jwt thừa thãi
         Restaurant restaurant = restaurantService.findRestaurantById(id);
         return new ResponseEntity<>(restaurant, HttpStatus.OK);
     }
@@ -54,7 +48,7 @@ public class RestaurantController {
     public ResponseEntity<RestaurantDto> addToFavorites(
             @RequestHeader("Authorization") String jwt,
             @PathVariable Long id) throws Exception {
-
+        // CHÚ Ý: Chức năng thả tim thì VẪN PHẢI BẮT BUỘC có JWT để biết ai thả tim
         User user = userService.findUserByJwtToken(jwt);
         RestaurantDto restaurantDto = restaurantService.addToFavorites(id, user);
         return new ResponseEntity<>(restaurantDto, HttpStatus.OK);
