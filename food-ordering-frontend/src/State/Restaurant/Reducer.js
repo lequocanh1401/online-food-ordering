@@ -1,7 +1,7 @@
 import {
-    CREATE_CATEGORY_SUCCESS, CREATE_EVENT_SUCCESS, CREATE_RESTAURANT_SUCCESS,
+    CREATE_CATEGORY_SUCCESS, CREATE_EVENT_SUCCESS, CREATE_EVENTS_SUCCESS, CREATE_RESTAURANT_SUCCESS,
     DELETE_EVENT_SUCCESS, GET_ALL_RESTAURANTS_SUCCESS, GET_RESTAURANTS_CATEGORY_SUCCESS,
-    GET_RESTAURANTS_EVENTS_SUCCESS, GET_RESTAURANT_BY_ID_SUCCESS, GET_RESTAURANT_BY_USER_ID_SUCCESS,
+    GET_RESTAURANTS_EVENTS_SUCCESS, GET_ALL_EVENTS_SUCCESS, GET_RESTAURANT_BY_ID_SUCCESS, GET_RESTAURANT_BY_USER_ID_SUCCESS,
     UPDATE_RESTAURANT_STATUS_SUCCESS
 } from "./ActionType";
 
@@ -30,8 +30,10 @@ export const restaurantReducer = (state = initialState, action) => {
         case CREATE_CATEGORY_SUCCESS:
             return { ...state, isLoading: false, categories: [...state.categories, action.payload] };
         case GET_RESTAURANTS_EVENTS_SUCCESS:
+        case GET_ALL_EVENTS_SUCCESS:
             return { ...state, isLoading: false, events: action.payload };
         case CREATE_EVENT_SUCCESS:
+        case CREATE_EVENTS_SUCCESS:
             return { ...state, isLoading: false, events: [...state.events, action.payload] };
         case DELETE_EVENT_SUCCESS:
             return { ...state, isLoading: false, events: state.events.filter((item) => item.id !== action.payload) };

@@ -10,12 +10,13 @@ import com.anh.repository.UserRepository;
 import com.anh.request.CreateRestaurantRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class RestaurantServiceImpl implements RestaurantService {
 
     @Autowired
@@ -56,6 +57,28 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
         if(updatedRestaurant.getName() != null) {
             restaurant.setName(updatedRestaurant.getName());
+        }
+        if(updatedRestaurant.getOpeningHours() != null) {
+            restaurant.setOpeningHours(updatedRestaurant.getOpeningHours());
+        }
+        if(updatedRestaurant.getImages() != null) {
+            restaurant.setImages(updatedRestaurant.getImages());
+        }
+        if(updatedRestaurant.getContactInformation() != null) {
+            restaurant.setContactInformation(updatedRestaurant.getContactInformation());
+        }
+        if(updatedRestaurant.getAddress() != null) {
+            Address existingAddress = restaurant.getAddress();
+            Address updatedAddress = updatedRestaurant.getAddress();
+            if (existingAddress == null) {
+                existingAddress = new Address();
+            }
+            existingAddress.setStreetAddress(updatedAddress.getStreetAddress());
+            existingAddress.setCity(updatedAddress.getCity());
+            existingAddress.setCountry(updatedAddress.getCountry());
+            existingAddress.setPostalCode(updatedAddress.getPostalCode());
+            existingAddress.setStateProvince(updatedAddress.getStateProvince());
+            restaurant.setAddress(addressRepository.save(existingAddress));
         }
         return restaurantRepository.save(restaurant);
     }

@@ -4,7 +4,8 @@ import {
     GET_USER_FAILURE, GET_USER_REQUEST, GET_USER_SUCCESS,
     LOGIN_FAILURE, LOGIN_REQUEST, LOGIN_SUCCESS,
     LOGOUT,
-    REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS
+    REGISTER_FAILURE, REGISTER_REQUEST, REGISTER_SUCCESS,
+    ADD_TO_FAVORITES_REQUEST, ADD_TO_FAVORITES_SUCCESS, ADD_TO_FAVORITES_FAILURE
 } from "./ActionType";
 
 export const registerUser = (reqData) => async (dispatch) => {
@@ -72,5 +73,65 @@ export const logout = () => async (dispatch) => {
         console.log("Đăng xuất thành công");
     } catch (error) {
         console.log("Lỗi đăng xuất", error);
+    }
+};
+
+export const addToFavorites = ({ jwt, restaurantId }) => async (dispatch) => {
+    dispatch({ type: ADD_TO_FAVORITES_REQUEST });
+    try {
+        const { data } = await axios.put(`${API_URL}/api/restaurants/${restaurantId}/add-favorites`, {}, {
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        });
+        dispatch({ type: ADD_TO_FAVORITES_SUCCESS, payload: data });
+        console.log("Đã cập nhật yêu thích", data);
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: ADD_TO_FAVORITES_FAILURE, payload: errorMessage });
+        console.log("Lỗi cập nhật yêu thích", errorMessage);
+    }
+};
+
+export const addUserAddress = ({ jwt, addressData }) => async (dispatch) => {
+    try {
+        const { data } = await axios.put(`${API_URL}/api/users/profile/address`, addressData, {
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        });
+        // Tận dụng luôn GET_USER_SUCCESS để nạp đè User mới cập nhật vào Redux
+        dispatch({ type: GET_USER_SUCCESS, payload: data });
+        console.log("Thêm địa chỉ mới thành công:", data);
+    } catch (error) {
+        console.log("Lỗi thêm địa chỉ mới:", error.response?.data?.message || error.message);
+    }
+};
+
+export const deleteUserAddress = ({ jwt, addressId }) => async (dispatch) => {
+    try {
+        const { data } = await axios.delete(`${API_URL}/api/users/profile/address/${addressId}`, {
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        });
+        dispatch({ type: GET_USER_SUCCESS, payload: data });
+        console.log("Xóa địa chỉ thành công:", data);
+    } catch (error) {
+        console.log("Lỗi xóa địa chỉ:", error.response?.data?.message || error.message);
+    }
+};
+
+export const updateUserAddress = ({ jwt, addressId, addressData }) => async (dispatch) => {
+    try {
+        const { data } = await axios.put(`${API_URL}/api/users/profile/address/${addressId}`, addressData, {
+            headers: {
+                Authorization: `Bearer ${jwt}`
+            }
+        });
+        dispatch({ type: GET_USER_SUCCESS, payload: data });
+        console.log("Cập nhật địa chỉ thành công:", data);
+    } catch (error) {
+        console.log("Lỗi cập nhật địa chỉ:", error.response?.data?.message || error.message);
     }
 };

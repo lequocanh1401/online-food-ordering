@@ -60,4 +60,15 @@ public class AdminFoodController {
         Food food = foodService.updateAvailibilityStatus(id);
         return new ResponseEntity<>(food, HttpStatus.OK);
     }
+
+    @PutMapping("/{id}/update")
+    public ResponseEntity<Food> updateFood(
+            @PathVariable Long id,
+            @RequestBody CreateFoodRequest req,
+            @RequestHeader("Authorization") String jwt) throws Exception {
+        User user = userService.findUserByJwtToken(jwt);
+        Category category = categoryService.findCategoryById(req.getCategory().getId());
+        Food food = foodService.updateFood(id, req, category);
+        return new ResponseEntity<>(food, HttpStatus.OK);
+    }
 }

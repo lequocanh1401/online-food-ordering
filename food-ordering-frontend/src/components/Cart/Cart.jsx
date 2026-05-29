@@ -4,6 +4,7 @@ import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { createOrder } from '../../State/Order/Action';
 import { updateCartItem, removeCartItem, findUserCart } from '../../State/Cart/Action';
 
@@ -11,8 +12,10 @@ export const Cart = () => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
 
+    const navigate = useNavigate();
     // Rút kho giỏ hàng ra
     const cartData = useSelector(store => store.cart);
+    const auth = useSelector(store => store.auth);
 
     // Bộ lọc vét dữ liệu
     const cartItems = cartData.cartItems || cartData.cart?.item || cartData.cart?.items || [];
@@ -39,7 +42,7 @@ export const Cart = () => {
                 restaurantId: cartItems[0]?.food?.restaurant?.id
             };
             console.log("Đang gửi API Đặt Hàng:", reqData);
-            dispatch(createOrder({ reqData, jwt }));
+            dispatch(createOrder({ reqData, jwt, navigate }));
             formik.resetForm();
         }
     });
@@ -102,6 +105,44 @@ export const Cart = () => {
                 {/* CỘT PHẢI: ĐỊA CHỈ */}
                 <section className='lg:w-[50%] space-y-6'>
                     <h1 className='text-2xl font-semibold border-b border-gray-800 pb-3'>Thông Tin Giao Hàng</h1>
+                    
+                    {/* Chọn nhanh địa chỉ đã lưu */}
+                    {auth.user?.addresses && auth.user.addresses.length > 0 && (
+                        <div className="bg-gray-900/60 p-4 rounded-lg border border-gray-800 space-y-2">
+                            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Chọn nhanh địa chỉ đã lưu:</p>
+                            <div className="flex flex-wrap gap-2">
+                                {auth.user.addresses.map((addr, index) => (
+                                    <Button
+                                        key={addr.id || index}
+                                        variant="outlined"
+                                        size="small"
+                                        onClick={() => {
+                                            formik.setValues({
+                                                streetAddress: addr.streetAddress || "",
+                                                state: addr.stateProvince || addr.state || "",
+                                                city: addr.city || "",
+                                                pincode: addr.postalCode || ""
+                                            });
+                                        }}
+                                        sx={{
+                                            color: '#e91e63',
+                                            borderColor: 'rgba(233, 30, 99, 0.4)',
+                                            textTransform: 'none',
+                                            borderRadius: '8px',
+                                            fontSize: '0.8rem',
+                                            '&:hover': {
+                                                borderColor: '#e91e63',
+                                                bgcolor: 'rgba(233, 30, 99, 0.05)'
+                                            }
+                                        }}
+                                    >
+                                        #{index + 1}: {addr.streetAddress}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <form onSubmit={formik.handleSubmit} className='space-y-5 bg-gray-900 p-6 rounded-lg border border-gray-800 shadow-xl'>
                         <Grid container spacing={3}>
                             <Grid item xs={12}>

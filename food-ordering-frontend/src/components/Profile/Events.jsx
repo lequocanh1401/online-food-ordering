@@ -2,10 +2,12 @@ import React, { useEffect } from 'react';
 import { Card, CardMedia, CardContent, Typography } from '@mui/material';
 import { useDispatch, useSelector } from 'react-redux';
 import { getAllEventsAction } from '../../State/Restaurant/Action'; // Hoặc đường dẫn chứa action lấy sự kiện của bạn
+import { useNavigate } from 'react-router-dom';
 
 export const Events = () => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
+    const navigate = useNavigate();
 
     // Lấy dữ liệu từ store restaurant giống như bên trang Admin
     const restaurant = useSelector(store => store.restaurant);
@@ -18,6 +20,15 @@ export const Events = () => {
         }
     }, [dispatch, jwt]);
 
+    const handleNavigateToRestaurant = (eventItem) => {
+        if (eventItem.restaurant?.id) {
+            const city = eventItem.restaurant.address?.city || "vietnam";
+            const name = eventItem.restaurant.name || "restaurant";
+            const id = eventItem.restaurant.id;
+            navigate(`/restaurant/${city}/${name}/${id}`);
+        }
+    };
+
     return (
         <div className='pb-10 flex flex-col items-center'>
             <h1 className='text-2xl text-center py-7 font-bold text-gray-300 tracking-wider'>
@@ -27,7 +38,12 @@ export const Events = () => {
             <div className='flex flex-wrap items-center justify-center gap-6 px-5 w-full lg:w-4/5'>
                 {restaurant.events?.length > 0 ? (
                     restaurant.events.map((item) => (
-                        <Card key={item.id} sx={{ width: 345, bgcolor: '#111827', border: '1px solid #1f2937' }} className='hover:scale-105 transition-transform duration-300'>
+                        <Card 
+                            key={item.id} 
+                            sx={{ width: 345, bgcolor: '#111827', border: '1px solid #1f2937' }} 
+                            className='hover:scale-105 transition-transform duration-300 cursor-pointer hover:border-pink-500'
+                            onClick={() => handleNavigateToRestaurant(item)}
+                        >
                             <CardMedia
                                 sx={{ height: 160 }}
                                 image={item.image || "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg"}
@@ -38,6 +54,9 @@ export const Events = () => {
                                     {item.name}
                                 </Typography>
                                 <Typography variant="body2" className='text-gray-400'>
+                                    <span className='font-semibold text-gray-300'>Nhà hàng:</span> {item.restaurant?.name || "Hệ thống"}
+                                </Typography>
+                                <Typography variant="body2" className='text-gray-400 mt-1'>
                                     <span className='font-semibold text-gray-300'>Nơi áp dụng:</span> {item.location}
                                 </Typography>
                                 <div className='mt-4 pt-3 border-t border-gray-800 text-xs text-gray-500 space-y-1'>

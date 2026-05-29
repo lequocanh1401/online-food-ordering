@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 import { AdminSidebar } from './AdminSidebar';
 import { Dashboard } from './Dashboard';
 import { Orders } from './Orders';
@@ -15,15 +15,32 @@ import { getRestaurantByUserId } from '../../State/Restaurant/Action';
 
 export const Admin = () => {
     const dispatch = useDispatch();
+    const navigate = useNavigate();
     const jwt = localStorage.getItem("jwt");
-    const { restaurant } = useSelector(store => store);
+    const { restaurant, auth } = useSelector(store => store);
     const handleClose = () => { };
 
     useEffect(() => {
-        if (jwt) {
+        if (!jwt) {
+            navigate("/");
+        } else if (auth.user && auth.user.role !== "ROLE_RESTAURANT_OWNER" && auth.user.role !== "ROLE_ADMIN") {
+            navigate("/");
+        }
+    }, [jwt, auth.user, navigate]);
+
+    useEffect(() => {
+        if (jwt && auth.user && (auth.user.role === "ROLE_RESTAURANT_OWNER" || auth.user.role === "ROLE_ADMIN")) {
             dispatch(getRestaurantByUserId(jwt));
         }
-    }, [jwt, dispatch]);
+    }, [jwt, auth.user, dispatch]);
+
+    if (auth.isLoading || (jwt && !auth.user)) {
+        return (
+            <div className="flex items-center justify-center min-h-[80vh] text-gray-400 font-medium">
+                Đang tải thông tin...
+            </div>
+        );
+    }
 
     if (!restaurant?.usersRestaurant || !restaurant?.usersRestaurant?.id) {
         return (

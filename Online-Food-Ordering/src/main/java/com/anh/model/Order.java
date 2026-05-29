@@ -1,6 +1,7 @@
 package com.anh.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,10 +20,11 @@ public class Order {
     private Long id;
 
     @ManyToOne
+    @JsonIgnoreProperties({"favorites", "addresses", "orders"})
     private User customer;
 
-    @JsonIgnore
     @ManyToOne
+    @JsonIgnoreProperties({"owner", "orders", "foods", "images"})
     private Restaurant restaurant;
 
     private Long totalAmount;
@@ -32,7 +34,7 @@ public class Order {
     @ManyToOne
     private Address deliveryAddress;
 
-    @OneToMany
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items;
 
     // payment logic có thể thêm sau theo video

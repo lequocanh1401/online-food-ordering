@@ -73,3 +73,53 @@ export const updateStockOfIngredient = ({ id, jwt }) => {
         }
     };
 };
+
+export const deleteIngredientAction = ({ id, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await api.delete(`/api/admin/ingredients/${id}`, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Xóa nguyên liệu thành công");
+        dispatch(getIngredientsOfRestaurant({ id: restaurantId, jwt }));
+    } catch (error) {
+        alert(error.response?.data?.message || error.response?.data || error.message);
+        console.log("Lỗi xóa nguyên liệu:", error.message);
+    }
+};
+
+export const updateIngredientAction = ({ id, data, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await api.put(`/api/admin/ingredients/${id}`, data, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Cập nhật nguyên liệu thành công");
+        dispatch(getIngredientsOfRestaurant({ id: restaurantId, jwt }));
+    } catch (error) {
+        console.log("Lỗi cập nhật nguyên liệu:", error.message);
+    }
+};
+
+export const deleteIngredientCategoryAction = ({ id, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await api.delete(`/api/admin/ingredients/category/${id}`, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Xóa nhóm nguyên liệu thành công");
+        dispatch(getIngredientCategory({ id: restaurantId, jwt }));
+    } catch (error) {
+        alert(error.response?.data?.message || error.response?.data || error.message);
+        console.log("Lỗi xóa nhóm nguyên liệu:", error.message);
+    }
+};
+
+export const updateIngredientCategoryAction = ({ id, data, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await api.put(`/api/admin/ingredients/category/${id}`, data, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Cập nhật nhóm nguyên liệu thành công");
+        dispatch(getIngredientCategory({ id: restaurantId, jwt }));
+    } catch (error) {
+        console.log("Lỗi cập nhật nhóm nguyên liệu:", error.message);
+    }
+};

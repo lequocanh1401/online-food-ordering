@@ -53,4 +53,38 @@ public class IngredientsController {
         List<IngredientCategory> items = ingredientsService.findIngredientCategoryByRestaurantId(id);
         return new ResponseEntity<>(items, HttpStatus.OK);
     }
+
+    @PutMapping("/category/{id}")
+    public ResponseEntity<IngredientCategory> updateIngredientCategory(
+            @PathVariable Long id,
+            @RequestBody com.anh.request.IngredientCategoryRequest req) throws Exception {
+        IngredientCategory item = ingredientsService.updateIngredientCategory(id, req.getName());
+        return new ResponseEntity<>(item, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/category/{id}")
+    public ResponseEntity<com.anh.response.MessageResponse> deleteIngredientCategory(
+            @PathVariable Long id) throws Exception {
+        ingredientsService.deleteIngredientCategory(id);
+        com.anh.response.MessageResponse res = new com.anh.response.MessageResponse();
+        res.setMessage("Ingredient category deleted successfully");
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<IngredientsItem> updateIngredientItem(
+            @PathVariable Long id,
+            @RequestBody IngredientRequest req) throws Exception {
+        IngredientsItem item = ingredientsService.updateIngredientItem(id, req.getName(), req.getCategoryId());
+        return new ResponseEntity<>(item, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<com.anh.response.MessageResponse> deleteIngredientItem(
+            @PathVariable Long id) throws Exception {
+        ingredientsService.deleteIngredientItem(id);
+        com.anh.response.MessageResponse res = new com.anh.response.MessageResponse();
+        res.setMessage("Ingredient item deleted successfully");
+        return new ResponseEntity<>(res, HttpStatus.OK);
+    }
 }

@@ -28,7 +28,7 @@ export const Home = () => {
                 <div className='absolute top-0 left-0 right-0 bottom-0 bg-black bg-opacity-60 z-0'></div>
 
                 <div className='w-[50vw] z-10 text-center'>
-                    <p className='text-3xl lg:text-7xl font-bold py-5 tracking-wide text-white'>Zosh Food</p>
+                    <p className='text-3xl lg:text-7xl font-bold py-5 tracking-wide text-white'>Online Food Ordering</p>
                     <p className='text-gray-300 text-xl lg:text-3xl font-light'>Hương vị tuyệt hảo, giao ngay tận cửa!</p>
                 </div>
             </section>

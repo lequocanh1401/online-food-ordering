@@ -81,4 +81,50 @@ public class IngredientsServiceImpl implements IngredientsService {
         item.setInStock(!item.isInStock()); // Đảo trạng thái Còn hàng / Hết hàng
         return ingredientItemRepository.save(item);
     }
+
+    @Autowired
+    private com.anh.repository.FoodRepository foodRepository;
+
+    @Override
+    public IngredientsItem findIngredientItemById(Long id) throws Exception {
+        Optional<IngredientsItem> opt = ingredientItemRepository.findById(id);
+        if (opt.isEmpty()) {
+            throw new Exception("Ingredient not found with id: " + id);
+        }
+        return opt.get();
+    }
+
+    @Override
+    public IngredientCategory updateIngredientCategory(Long categoryId, String name) throws Exception {
+        IngredientCategory category = findIngredientCategoryById(categoryId);
+        category.setName(name);
+        return ingredientCategoryRepository.save(category);
+    }
+
+    @Override
+    public void deleteIngredientCategory(Long categoryId) throws Exception {
+        IngredientCategory category = findIngredientCategoryById(categoryId);
+        if (!category.getIngredients().isEmpty()) {
+            throw new Exception("Không thể xóa danh mục này vì vẫn còn nguyên liệu bên trong.");
+        }
+        ingredientCategoryRepository.delete(category);
+    }
+
+    @Override
+    public IngredientsItem updateIngredientItem(Long ingredientId, String name, Long categoryId) throws Exception {
+        IngredientsItem item = findIngredientItemById(ingredientId);
+        IngredientCategory category = findIngredientCategoryById(categoryId);
+        item.setName(name);
+        item.setCategory(category);
+        return ingredientItemRepository.save(item);
+    }
+
+    @Override
+    public void deleteIngredientItem(Long ingredientId) throws Exception {
+        if (foodRepository.existsByIngredientId(ingredientId)) {
+            throw new Exception("Không thể xóa nguyên liệu này vì có món ăn đang sử dụng nó.");
+        }
+        IngredientsItem item = findIngredientItemById(ingredientId);
+        ingredientItemRepository.delete(item);
+    }
 }

@@ -5,12 +5,14 @@ import com.anh.repository.*;
 import com.anh.request.CreateOrderRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class OrderServiceImpl implements OrderService {
 
     @Autowired
@@ -28,27 +30,48 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order createOrder(CreateOrderRequest orderReq, User user) throws Exception {
+        // Nạp managedUser để chạy trong Persistence Context/Session giao dịch hiện tại
+        User managedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new Exception("User not found"));
+
+        // Lấy giỏ hàng hiện tại của User trước để kiểm tra và lấy thông tin nhà hàng
+        Cart cart = cartService.findCartByUserId(user.getId());
+        if (cart == null || cart.getItem().isEmpty()) {
+            throw new Exception("Cart is empty or not found");
+        }
+
+        // Tự động phân tích lấy Restaurant trực tiếp từ món ăn trong giỏ ở phía Backend
+        Restaurant restaurant = null;
+        CartItem firstCartItem = cart.getItem().get(0);
+        if (firstCartItem.getFood() != null) {
+            restaurant = firstCartItem.getFood().getRestaurant();
+        }
+
+        // Nếu giỏ hàng không có món nào hợp lệ hoặc lỗi, fallback về restaurantId từ frontend gửi lên
+        if (restaurant == null && orderReq.getRestaurantId() != null) {
+            restaurant = restaurantService.findRestaurantById(orderReq.getRestaurantId());
+        }
+
+        if (restaurant == null) {
+            throw new Exception("Restaurant not found for this order");
+        }
+
         // 1. Lưu địa chỉ giao hàng trước
         Address shippingAddress = orderReq.getDeliveryAddress();
         Address savedAddress = addressRepository.save(shippingAddress);
 
-        if(!user.getAddresses().contains(savedAddress)){
-            user.getAddresses().add(savedAddress);
-            userRepository.save(user);
+        if(!managedUser.getAddresses().contains(savedAddress)){
+            managedUser.getAddresses().add(savedAddress);
+            userRepository.save(managedUser);
         }
-
-        Restaurant restaurant = restaurantService.findRestaurantById(orderReq.getRestaurantId());
 
         // 2. Khởi tạo thực thể Order
         Order createdOrder = new Order();
-        createdOrder.setCustomer(user);
+        createdOrder.setCustomer(managedUser);
         createdOrder.setCreatedAt(new Date());
         createdOrder.setOrderStatus("PENDING");
         createdOrder.setDeliveryAddress(savedAddress);
         createdOrder.setRestaurant(restaurant);
-
-        // 3. Lấy giỏ hàng hiện tại của User để chuyển thành OrderItem
-        Cart cart = cartService.findCartByUserId(user.getId());
 
         createdOrder.setTotalAmount(cart.getTotal());
 
@@ -57,7 +80,14 @@ public class OrderServiceImpl implements OrderService {
         for(CartItem cartItem : cart.getItem()) { // Sử dụng cart.getItems() nếu Model của bạn đặt số nhiều
             OrderItem orderItem = new OrderItem();
             orderItem.setFood(cartItem.getFood());
-            orderItem.setIngredients(cartItem.getIngredients());
+            
+            // Copy danh sách nguyên liệu sang thực thể mới để tránh lỗi chia sẻ bộ sưu tập của Hibernate
+            if (cartItem.getIngredients() != null) {
+                orderItem.setIngredients(new ArrayList<>(cartItem.getIngredients()));
+            } else {
+                orderItem.setIngredients(new ArrayList<>());
+            }
+            
             orderItem.setQuantity(cartItem.getQuantity());
             orderItem.setTotalPrice(cartItem.getTotalPrice());
 
@@ -70,7 +100,6 @@ public class OrderServiceImpl implements OrderService {
         createdOrder.setTotalPrice(totalPrice);
 
         Order savedOrder = orderRepository.save(createdOrder);
-        restaurant.getOrders().add(savedOrder);
 
         // Làm sạch giỏ hàng của User sau khi đặt hàng thành công
         cartService.clearCart(user.getId());
@@ -95,6 +124,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void cancelOrder(Long orderId) throws Exception {
         Order order = findOrderById(orderId);
+        if (!"PENDING".equals(order.getOrderStatus())) {
+            throw new Exception("Chỉ có thể hủy/xóa đơn hàng chưa thanh toán.");
+        }
         orderRepository.deleteById(orderId);
     }
 

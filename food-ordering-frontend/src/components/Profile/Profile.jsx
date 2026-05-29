@@ -4,6 +4,10 @@ import { Route, Routes } from 'react-router-dom';
 import { Orders } from './Orders';
 import { Favorites } from './Favorites';
 import { Events } from './Events'; // 👈 Đã mở khóa import trang Events khách hàng
+import { Payments } from './Payments';
+import { UserProfile } from './UserProfile';
+import { Address } from './Address';
+import { Notifications } from './Notifications';
 
 export const Profile = () => {
     const [openSideBar, setOpenSideBar] = useState(false);
@@ -18,9 +22,13 @@ export const Profile = () => {
             {/* Ruột thay đổi theo URL */}
             <div className='lg:w-[80%] mt-5 lg:mt-0'>
                 <Routes>
+                    <Route path='/' element={<UserProfile />} />
                     <Route path='/orders' element={<Orders />} />
                     <Route path='/favorites' element={<Favorites />} />
                     <Route path='/events' element={<Events />} /> {/* 👈 Đã mở khóa route */}
+                    <Route path='/payments' element={<Payments />} />
+                    <Route path='/address' element={<Address />} />
+                    <Route path='/notifications' element={<Notifications />} />
                 </Routes>
             </div>
         </div>

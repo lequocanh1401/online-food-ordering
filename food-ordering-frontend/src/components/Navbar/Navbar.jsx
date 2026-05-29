@@ -1,12 +1,14 @@
-import React from 'react';
-import { Avatar, Badge, IconButton } from '@mui/material';
+import React, { useState } from 'react';
+import { Avatar, Badge, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
+import { SearchModal } from './SearchModal';
 
 export const Navbar = () => {
     const navigate = useNavigate();
+    const [searchOpen, setSearchOpen] = useState(false);
 
     // Kéo thông tin người dùng và giỏ hàng từ Redux để hiển thị số lượng món ăn
     const auth = useSelector(store => store.auth);
@@ -25,14 +27,14 @@ export const Navbar = () => {
             {/* Logo Góc Trái */}
             <div className='lg:mr-10 cursor-pointer flex items-center space-x-4'>
                 <li onClick={() => navigate("/")} className='logo font-semibold text-white text-2xl list-none'>
-                    Zosh Food
+                    Online Food Ordering
                 </li>
             </div>
 
             {/* Các Nút Chức Năng Góc Phải */}
             <div className='flex items-center space-x-2 lg:space-x-10'>
                 <div className=''>
-                    <IconButton>
+                    <IconButton onClick={() => setSearchOpen(true)}>
                         <SearchIcon sx={{ fontSize: "1.5rem", color: "white" }} />
                     </IconButton>
                 </div>
@@ -59,9 +61,8 @@ export const Navbar = () => {
                     </IconButton>
                 </div>
             </div>
+
+            <SearchModal open={searchOpen} handleClose={() => setSearchOpen(false)} />
         </Box>
     );
 };
-
-// Đừng quên import Box từ MUI nhé, nếu thiếu thì bạn chèn dòng này lên trên cùng:
-import { Box } from '@mui/material';

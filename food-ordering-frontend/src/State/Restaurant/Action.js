@@ -199,3 +199,53 @@ export const getAllEventsAction = ({ jwt }) => {
         }
     };
 };
+
+export const updateCategoryAction = ({ categoryId, data, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await axios.put(`${API_URL}/api/admin/category/${categoryId}`, data, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Cập nhật danh mục thành công");
+        dispatch(getRestaurantsCategory({ jwt, restaurantId }));
+    } catch (error) {
+        console.log("Lỗi cập nhật danh mục:", error.message);
+    }
+};
+
+export const deleteCategoryAction = ({ categoryId, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await axios.delete(`${API_URL}/api/admin/category/${categoryId}`, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Xóa danh mục thành công");
+        dispatch(getRestaurantsCategory({ jwt, restaurantId }));
+    } catch (error) {
+        alert(error.response?.data?.message || error.response?.data || error.message);
+        console.log("Lỗi xóa danh mục:", error.message);
+    }
+};
+
+export const updateEventAction = ({ eventId, data, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await api.put(`/api/admin/events/${eventId}`, data, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Cập nhật sự kiện thành công");
+        dispatch(getRestaurantsEvents({ restaurantId, jwt }));
+    } catch (error) {
+        console.log("Lỗi cập nhật sự kiện:", error.message);
+    }
+};
+
+export const updateRestaurantAction = ({ restaurantId, reqData, jwt }) => async (dispatch) => {
+    try {
+        const { data } = await axios.put(`${API_URL}/api/admin/restaurants/${restaurantId}`, reqData, {
+            headers: { Authorization: `Bearer ${jwt}` }
+        });
+        console.log("Cập nhật thông tin nhà hàng thành công");
+        dispatch({ type: GET_RESTAURANT_BY_USER_ID_SUCCESS, payload: data });
+    } catch (error) {
+        console.log("Lỗi cập nhật thông tin nhà hàng:", error.message);
+        alert(error.response?.data?.message || error.response?.data || error.message);
+    }
+};

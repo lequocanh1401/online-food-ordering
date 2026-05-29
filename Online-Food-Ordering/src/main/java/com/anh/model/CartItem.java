@@ -1,6 +1,7 @@
 package com.anh.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,10 +22,12 @@ public class CartItem {
     private Cart cart;
 
     @ManyToOne
+    @JsonIgnoreProperties({"restaurant", "foodCategory", "ingredients"})
     private Food food;
 
     private int quantity;
 
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> ingredients;
 
     private Long totalPrice;

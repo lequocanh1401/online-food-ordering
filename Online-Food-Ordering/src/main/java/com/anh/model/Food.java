@@ -25,7 +25,7 @@ public class Food {
     private Category foodCategory;
 
     @Column(length = 1000)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;
 
     private boolean available;

@@ -1,6 +1,7 @@
 package com.anh.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -19,6 +20,7 @@ public class Restaurant {
     private Long id;
 
     @OneToOne
+    @JsonIgnoreProperties({"favorites", "addresses", "orders"})
     private User owner;
 
     private String name;

@@ -9,10 +9,11 @@ import com.anh.repository.CartRepository;
 import com.anh.request.AddCartItemRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Optional;
 
 @Service
+@Transactional
 public class CartServiceImpl implements CartService {
 
     @Autowired
@@ -32,7 +33,7 @@ public class CartServiceImpl implements CartService {
 
         // Kiểm tra xem món này đã có trong giỏ chưa
         for (CartItem cartItem : cart.getItem()) {
-            if (cartItem.getFood().equals(food)) {
+            if (cartItem.getFood() != null && cartItem.getFood().getId().equals(food.getId())) {
                 // Tùy chọn: Bạn có thể thêm logic kiểm tra ingredients (topping) giống nhau ở đây
                 int newQuantity = cartItem.getQuantity() + req.getQuantity();
                 return updateCartItemQuantity(cartItem.getId(), newQuantity);

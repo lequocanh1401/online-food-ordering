@@ -71,7 +71,7 @@ export const OrderTable = ({ filterValue }) => {
                                     <TableCell component="th" scope="row">{item.id}</TableCell>
                                     <TableCell align="right">
                                         <AvatarGroup max={4} sx={{ justifyContent: 'flex-end' }}>
-                                            {item.items.map((orderItem) => (
+                                            {item.items?.map((orderItem) => (
                                                 <Avatar key={orderItem.id} src={orderItem.food?.images[0]} />
                                             ))}
                                         </AvatarGroup>
@@ -79,7 +79,7 @@ export const OrderTable = ({ filterValue }) => {
                                     <TableCell align="right">{item.customer?.fullName}</TableCell>
                                     <TableCell align="right">{item.totalPrice}đ</TableCell>
                                     <TableCell align="right">
-                                        {item.items.map((orderItem) => <p key={orderItem.id}>{orderItem.food?.name}</p>)}
+                                        {item.items?.map((orderItem) => <p key={orderItem.id}>{orderItem.food?.name}</p>)}
                                     </TableCell>
                                     <TableCell align="right">
                                         <span className={`px-4 py-2 rounded-full text-sm font-semibold ${item.orderStatus === 'PENDING' ? 'bg-yellow-600 text-white' : 'bg-green-600 text-white'}`}>

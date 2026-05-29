@@ -3,6 +3,7 @@ package com.anh.service;
 import com.anh.model.Category;
 import com.anh.model.Restaurant;
 import com.anh.repository.CategoryRepository;
+import com.anh.repository.FoodRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,8 @@ public class CategoryServiceImpl implements CategoryService {
     private RestaurantService restaurantService;
     @Autowired
     private CategoryRepository categoryRepository;
+    @Autowired
+    private FoodRepository foodRepository;
 
     @Override
     public Category createCategory(String name, Long userId) throws Exception {
@@ -38,5 +41,21 @@ public class CategoryServiceImpl implements CategoryService {
             throw new Exception("Category not found");
         }
         return optionalCategory.get();
+    }
+
+    @Override
+    public Category updateCategory(Long categoryId, String name) throws Exception {
+        Category category = findCategoryById(categoryId);
+        category.setName(name);
+        return categoryRepository.save(category);
+    }
+
+    @Override
+    public void deleteCategory(Long categoryId) throws Exception {
+        if (foodRepository.existsByFoodCategoryId(categoryId)) {
+            throw new Exception("Không thể xóa danh mục này vì đang có món ăn sử dụng nó.");
+        }
+        Category category = findCategoryById(categoryId);
+        categoryRepository.delete(category);
     }
 }

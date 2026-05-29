@@ -1,5 +1,6 @@
 package com.anh.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -16,9 +17,11 @@ public class OrderItem {
     private Long id;
 
     @ManyToOne
+    @JsonIgnoreProperties({"restaurant", "foodCategory", "ingredients"})
     private Food food;
 
     private int quantity;
     private Long totalPrice;
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> ingredients;
 }

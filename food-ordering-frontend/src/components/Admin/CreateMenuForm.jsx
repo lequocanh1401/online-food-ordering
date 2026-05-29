@@ -126,7 +126,7 @@ export const CreateMenuForm = () => {
                                         </Box>
                                     )}
                                 >
-                                    {ingredients.ingredients?.map((item) => (
+                                    {ingredients.ingredients?.filter((item) => item.inStoke).map((item) => (
                                         <MenuItem key={item.id} value={item}>{item.name}</MenuItem>
                                     ))}
                                 </Select>

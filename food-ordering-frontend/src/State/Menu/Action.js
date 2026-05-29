@@ -22,7 +22,13 @@ export const createMenuItem = ({ menu, jwt }) => async (dispatch) => {
 export const getMenuItemsByRestaurantId = (reqData) => async (dispatch) => {
     dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_REQUEST });
     try {
-        const { data } = await axios.get(`${API_URL}/api/food/restaurant/${reqData.restaurantId}?vagetarian=${reqData.vegetarian}&nonveg=${reqData.nonveg}&seasonal=${reqData.seasonal}&food_category=${reqData.foodCategory}`, {
+        const { data } = await axios.get(`${API_URL}/api/food/restaurant/${reqData.restaurantId}`, {
+            params: {
+                vegetarian: reqData.vegetarian,
+                nonveg: reqData.nonveg,
+                seasonal: reqData.seasonal,
+                food_category: reqData.foodCategory
+            },
             headers: { Authorization: `Bearer ${reqData.jwt}` },
         });
         dispatch({ type: GET_MENU_ITEMS_BY_RESTAURANT_ID_SUCCESS, payload: data });
@@ -52,5 +58,24 @@ export const updateMenuItemsAvailability = ({ foodId, jwt }) => async (dispatch)
         dispatch({ type: UPDATE_MENU_ITEMS_AVAILABILITY_SUCCESS, payload: data });
     } catch (error) {
         dispatch({ type: UPDATE_MENU_ITEMS_AVAILABILITY_FAILURE, payload: error.message });
+    }
+};
+
+export const updateMenuItemAction = ({ foodId, menu, jwt, restaurantId }) => async (dispatch) => {
+    try {
+        await axios.put(`${API_URL}/api/admin/food/${foodId}/update`, menu, {
+            headers: { Authorization: `Bearer ${jwt}` },
+        });
+        console.log("Cập nhật món ăn thành công");
+        dispatch(getMenuItemsByRestaurantId({
+            jwt,
+            restaurantId,
+            vegetarian: false,
+            nonveg: false,
+            seasonal: false,
+            foodCategory: ""
+        }));
+    } catch (error) {
+        console.log("Lỗi cập nhật món ăn:", error.message);
     }
 };

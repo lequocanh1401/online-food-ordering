@@ -1,16 +1,60 @@
 import React, { useState } from 'react';
-import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Card, CardHeader, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Modal, TextField, Button, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import CreateIcon from '@mui/icons-material/Create';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import WarningIcon from '@mui/icons-material/Warning';
 import { CreateIngredientCategoryForm } from './CreateIngredientCategoryForm';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { deleteIngredientCategoryAction, updateIngredientCategoryAction } from '../../State/Ingredients/Action';
 
 export const IngredientCategoryTable = () => {
     const [open, setOpen] = useState(false);
     const handleOpen = () => setOpen(true);
     const handleClose = () => setOpen(false);
 
-    // Rút kho chứa nguyên liệu ra để hiển thị
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
+    const restaurant = useSelector(store => store.restaurant);
     const { ingredients } = useSelector(store => store);
+
+    const [editOpen, setEditOpen] = useState(false);
+    const [editCategory, setEditCategory] = useState(null);
+    const [editName, setEditName] = useState("");
+
+    // Custom confirm delete modal states
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteCategoryId, setDeleteCategoryId] = useState(null);
+
+    const handleEditClick = (category) => {
+        setEditCategory(category);
+        setEditName(category.name);
+        setEditOpen(true);
+    };
+
+    const handleDeleteClick = (id) => {
+        setDeleteCategoryId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteCategoryId) {
+            dispatch(deleteIngredientCategoryAction({ id: deleteCategoryId, jwt, restaurantId: restaurant.usersRestaurant?.id }));
+        }
+        setConfirmOpen(false);
+        setDeleteCategoryId(null);
+    };
+
+    const handleEditSubmit = (e) => {
+        e.preventDefault();
+        const data = {
+            name: editName,
+            restaurantId: restaurant.usersRestaurant?.id
+        };
+        dispatch(updateIngredientCategoryAction({ id: editCategory.id, data, jwt, restaurantId: restaurant.usersRestaurant?.id }));
+        setEditOpen(false);
+        setEditCategory(null);
+    };
 
     return (
         <Box>
@@ -22,14 +66,32 @@ export const IngredientCategoryTable = () => {
                             <TableRow>
                                 <TableCell>ID</TableCell>
                                 <TableCell align="left">Name</TableCell>
+                                <TableCell align="right">Hành động</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {/* Duyệt qua mảng danh mục thật từ Java */}
                             {ingredients.category?.map((item) => (
                                 <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                     <TableCell component="th" scope="row">{item.id}</TableCell>
                                     <TableCell align="left">{item.name}</TableCell>
+                                    <TableCell align="right">
+                                        <Box className="flex justify-end gap-1">
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => handleEditClick(item)}
+                                                sx={{ color: '#60a5fa', '&:hover': { bgcolor: 'rgba(96, 165, 250, 0.1)' } }}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => handleDeleteClick(item.id)}
+                                                sx={{ color: '#f87171', '&:hover': { bgcolor: 'rgba(248, 113, 113, 0.1)' } }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </Box>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -37,6 +99,56 @@ export const IngredientCategoryTable = () => {
                 </TableContainer>
             </Card>
             <CreateIngredientCategoryForm open={open} handleClose={handleClose} />
+
+            <Modal open={editOpen} onClose={() => setEditOpen(false)}>
+                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 400, bgcolor: 'background.paper', outline: 'none', boxShadow: 24, p: 4, borderRadius: '8px' }}>
+                    <form onSubmit={handleEditSubmit}>
+                        <h1 className='text-gray-800 font-bold text-center text-xl pb-6'>CẬP NHẬT NHÓM NGUYÊN LIỆU</h1>
+                        <TextField fullWidth label="Tên nhóm nguyên liệu" variant="outlined" value={editName} onChange={(e) => setEditName(e.target.value)} sx={{ mb: 3 }} required />
+                        <Button variant="contained" color="primary" type="submit" fullWidth size='large'>Cập nhật</Button>
+                    </form>
+                </Box>
+            </Modal>
+
+            {/* Custom confirm delete Dialog */}
+            <Dialog 
+                open={confirmOpen} 
+                onClose={() => setConfirmOpen(false)}
+                PaperProps={{
+                    sx: {
+                        bgcolor: '#1f2937',
+                        color: 'white',
+                        borderRadius: '12px',
+                        p: 1
+                    }
+                }}
+            >
+                <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, fontWeight: 'bold' }}>
+                    <WarningIcon sx={{ color: '#f87171' }} />
+                    Xác Nhận Xóa Nhóm Nguyên Liệu
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText sx={{ color: '#d1d5db' }}>
+                        Bạn có chắc chắn muốn xóa nhóm nguyên liệu này không? Các nguyên liệu bên trong nhóm này sẽ bị ảnh hưởng.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 2 }}>
+                    <Button 
+                        onClick={() => setConfirmOpen(false)} 
+                        sx={{ color: '#9ca3af', '&:hover': { bgcolor: 'rgba(156, 163, 175, 0.1)' } }}
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button 
+                        onClick={handleConfirmDelete} 
+                        variant="contained" 
+                        color="error"
+                        sx={{ borderRadius: '6px', fontWeight: 'bold' }}
+                    >
+                        Xác nhận xóa
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

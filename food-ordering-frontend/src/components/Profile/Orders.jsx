@@ -6,7 +6,7 @@ import { getUsersOrders } from '../../State/Order/Action';
 export const Orders = () => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
-    const { order } = useSelector(store => store); // Rút kho chứa đơn hàng ra
+    const order = useSelector(store => store.order); // Rút kho chứa đơn hàng ra
 
     // Tự động gọi API kéo danh sách đơn hàng khi vừa vào trang
     useEffect(() => {
@@ -21,7 +21,7 @@ export const Orders = () => {
             <div className='space-y-5 w-full lg:w-1/2'>
                 {order.orders && order.orders.length > 0 ? (
                     order.orders.map((orderItem) =>
-                        orderItem.items.map((item) => (
+                        orderItem.items?.map((item) => (
                             <OrderCard key={item.id} item={item} order={orderItem} />
                         ))
                     )

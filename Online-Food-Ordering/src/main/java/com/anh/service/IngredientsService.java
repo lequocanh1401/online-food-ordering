@@ -13,4 +13,9 @@ public interface IngredientsService {
     public IngredientsItem createIngredientItem(Long restaurantId, String ingredientName, Long categoryId) throws Exception;
     public List<IngredientsItem> findRestaurantsIngredients(Long restaurantId);
     public IngredientsItem updateStock(Long id) throws Exception;
+    public IngredientsItem findIngredientItemById(Long id) throws Exception;
+    public IngredientCategory updateIngredientCategory(Long categoryId, String name) throws Exception;
+    public void deleteIngredientCategory(Long categoryId) throws Exception;
+    public IngredientsItem updateIngredientItem(Long ingredientId, String name, Long categoryId) throws Exception;
+    public void deleteIngredientItem(Long ingredientId) throws Exception;
 }
