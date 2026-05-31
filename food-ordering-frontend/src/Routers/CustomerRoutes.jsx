@@ -9,6 +9,7 @@ import { Profile } from '../components/Profile/Profile';
 import { PaymentSuccess } from '../components/PaymentSuccess/PaymentSuccess'; // 👈 Import trang thành công vào đây
 import { PaymentFail } from '../components/PaymentFail/PaymentFail';
 import { SearchPage } from '../components/Search/SearchPage';
+import { Chatbot } from '../components/Chatbot/Chatbot';
 
 export const CustomerRoutes = () => {
     const navigate = useNavigate();
@@ -36,6 +37,7 @@ export const CustomerRoutes = () => {
                 <Route path='/payment/success' element={<PaymentSuccess />} />
                 <Route path='/payment/fail' element={<PaymentFail />} />
             </Routes>
+            <Chatbot />
         </div>
     );
 };
