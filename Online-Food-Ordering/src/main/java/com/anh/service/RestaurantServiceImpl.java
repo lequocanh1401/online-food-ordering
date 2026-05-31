@@ -8,6 +8,7 @@ import com.anh.repository.AddressRepository;
 import com.anh.repository.RestaurantRepository;
 import com.anh.repository.UserRepository;
 import com.anh.repository.ReviewRepository;
+import com.anh.repository.OrderRepository;
 import com.anh.request.CreateRestaurantRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     private UserRepository userRepository;
     @Autowired
     private ReviewRepository reviewRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
     private void populateRestaurantRating(Restaurant restaurant) {
         if (restaurant != null) {
@@ -35,6 +38,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             Long count = reviewRepository.getCountForRestaurant(restaurant.getId());
             restaurant.setAverageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
             restaurant.setTotalReviews(count != null ? count.intValue() : 0);
+            
+            Long revenue = orderRepository.calculateRevenueByRestaurantId(restaurant.getId());
+            restaurant.setTotalRevenue(revenue != null ? revenue : 0L);
         }
     }
 

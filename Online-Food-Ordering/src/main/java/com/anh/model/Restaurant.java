@@ -53,6 +53,9 @@ public class Restaurant {
     @Transient
     private Integer totalReviews;
 
+    @Transient
+    private Long totalRevenue;
+
     @JsonIgnore
     @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL)
     private List<Food> foods = new ArrayList<>();

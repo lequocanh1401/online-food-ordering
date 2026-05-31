@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dashboard, ShoppingBag, Fastfood, Category, LocalDining, Event, AdminPanelSettings, Logout, RateReview, LocalOffer } from '@mui/icons-material';
+import { Dashboard, ShoppingBag, Fastfood, Category, LocalDining, Event, AdminPanelSettings, Logout, RateReview, LocalOffer, MonetizationOn } from '@mui/icons-material';
 import { Divider, Drawer, useMediaQuery } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
@@ -20,6 +20,7 @@ const superAdminMenu = [
     { title: "Dashboard", icon: <Dashboard />, path: "/" },
     { title: "Reviews", icon: <RateReview />, path: "/reviews" },
     { title: "Coupons", icon: <LocalOffer />, path: "/coupons" },
+    { title: "Revenue", icon: <MonetizationOn />, path: "/revenue" },
     { title: "Logout", icon: <Logout />, path: "/" }
 ];
 

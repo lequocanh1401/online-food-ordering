@@ -17,6 +17,7 @@ import { getRestaurantByUserId } from '../../State/Restaurant/Action';
 import { SuperAdminDashboard } from './SuperAdminDashboard';
 import { SuperAdminReviews } from './SuperAdminReviews';
 import { SuperAdminCoupons } from './SuperAdminCoupons';
+import { SuperAdminRevenue } from './SuperAdminRevenue';
 
 export const Admin = () => {
     const dispatch = useDispatch();
@@ -69,6 +70,7 @@ export const Admin = () => {
                             <Route path='/' element={<SuperAdminDashboard />} />
                             <Route path='/reviews' element={<SuperAdminReviews />} />
                             <Route path='/coupons' element={<SuperAdminCoupons />} />
+                            <Route path='/revenue' element={<SuperAdminRevenue />} />
                         </>
                     ) : (
                         <>
