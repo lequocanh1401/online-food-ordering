@@ -5,17 +5,25 @@ import CloseIcon from '@mui/icons-material/Close';
 import RestaurantIcon from '@mui/icons-material/Restaurant';
 import FastfoodIcon from '@mui/icons-material/Fastfood';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../../config/api';
 
 export const SearchPage = () => {
     const navigate = useNavigate();
+    const [searchParams] = useSearchParams();
     const jwt = localStorage.getItem("jwt");
 
-    const [query, setQuery] = useState("");
+    const [query, setQuery] = useState(searchParams.get("query") || "");
     const [loading, setLoading] = useState(false);
     const [restaurants, setRestaurants] = useState([]);
     const [foods, setFoods] = useState([]);
+
+    useEffect(() => {
+        const q = searchParams.get("query");
+        if (q !== null) {
+            setQuery(q);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         if (!query.trim()) {

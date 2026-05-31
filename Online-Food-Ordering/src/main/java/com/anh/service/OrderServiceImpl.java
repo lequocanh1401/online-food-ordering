@@ -97,14 +97,27 @@ public class OrderServiceImpl implements OrderService {
         // Áp dụng Coupon giảm giá nếu có gửi kèm trong yêu cầu đặt hàng
         if (orderReq.getCouponCode() != null && !orderReq.getCouponCode().trim().isEmpty()) {
             java.util.Optional<com.anh.model.Coupon> couponOpt = couponRepository.findByCodeAndRestaurantId(orderReq.getCouponCode(), restaurant.getId());
+            if (!couponOpt.isPresent()) {
+                // Kiểm tra xem có phải mã toàn sàn không (restaurant == null)
+                java.util.Optional<com.anh.model.Coupon> globalCouponOpt = couponRepository.findByCode(orderReq.getCouponCode());
+                if (globalCouponOpt.isPresent() && globalCouponOpt.get().getRestaurant() == null) {
+                    couponOpt = globalCouponOpt;
+                }
+            }
             if (couponOpt.isPresent()) {
                 com.anh.model.Coupon coupon = couponOpt.get();
                 if (coupon.isActive()) {
+                    long minOrderVal = coupon.getMinimumOrderValue() != null ? coupon.getMinimumOrderValue() : 0L;
+                    if (totalPrice < minOrderVal) {
+                        throw new Exception("Đơn hàng chưa đạt giá trị tối thiểu " + minOrderVal + " đ để áp dụng mã giảm giá này.");
+                    }
                     long discount = 0;
-                    if ("PERCENTAGE".equalsIgnoreCase(coupon.getDiscountType())) {
-                        discount = (totalPrice * coupon.getDiscountValue()) / 100;
-                    } else if ("FLAT".equalsIgnoreCase(coupon.getDiscountType())) {
-                        discount = coupon.getDiscountValue();
+                    long discVal = coupon.getDiscountValue() != null ? coupon.getDiscountValue() : 0L;
+                    String discType = coupon.getDiscountType() != null ? coupon.getDiscountType() : "";
+                    if ("PERCENTAGE".equalsIgnoreCase(discType)) {
+                        discount = (totalPrice * discVal) / 100;
+                    } else if ("FLAT".equalsIgnoreCase(discType)) {
+                        discount = discVal;
                     }
                     // Đảm bảo số tiền giảm giá không âm và không vượt quá tổng tiền của giỏ hàng
                     discount = Math.max(0, Math.min(discount, totalPrice));

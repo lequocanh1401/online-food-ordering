@@ -26,7 +26,9 @@ public class AppConfig {
                 .authorizeHttpRequests(Authorize -> Authorize
                         .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/food/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/coupons").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/admin/ingredients/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/admin/restaurants/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN")
                         .requestMatchers("/api/**").authenticated()
                         .anyRequest().permitAll()

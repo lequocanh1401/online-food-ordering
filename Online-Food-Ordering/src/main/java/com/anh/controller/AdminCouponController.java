@@ -21,6 +21,12 @@ public class AdminCouponController {
         return new ResponseEntity<>(createdCoupon, HttpStatus.CREATED);
     }
 
+    @PostMapping("/global")
+    public ResponseEntity<Coupon> createGlobalCoupon(@RequestBody Coupon coupon) throws Exception {
+        Coupon createdCoupon = couponService.createGlobalCoupon(coupon);
+        return new ResponseEntity<>(createdCoupon, HttpStatus.CREATED);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCoupon(@PathVariable Long id) throws Exception {
         couponService.deleteCoupon(id);

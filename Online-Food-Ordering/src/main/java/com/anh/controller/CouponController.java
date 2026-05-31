@@ -15,8 +15,14 @@ public class CouponController {
     @Autowired
     private CouponService couponService;
 
+    @GetMapping("/validate")
+    public ResponseEntity<Coupon> validateCoupon(@RequestParam("code") String code, @RequestParam("restaurantId") Long restaurantId) throws Exception {
+        Coupon coupon = couponService.findCouponByCode(code, restaurantId);
+        return new ResponseEntity<>(coupon, HttpStatus.OK);
+    }
+
     @GetMapping("/validate/{code}/restaurant/{restaurantId}")
-    public ResponseEntity<Coupon> validateCoupon(@PathVariable String code, @PathVariable Long restaurantId) throws Exception {
+    public ResponseEntity<Coupon> validateCouponPath(@PathVariable String code, @PathVariable Long restaurantId) throws Exception {
         Coupon coupon = couponService.findCouponByCode(code, restaurantId);
         return new ResponseEntity<>(coupon, HttpStatus.OK);
     }

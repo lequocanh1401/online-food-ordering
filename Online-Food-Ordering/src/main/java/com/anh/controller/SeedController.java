@@ -33,6 +33,9 @@ public class SeedController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private CartRepository cartRepository;
+
     @GetMapping("/seed")
     public ResponseEntity<String> seedDatabase() {
         try {
@@ -368,15 +371,35 @@ public class SeedController {
                 }
             }
 
+            // 5. Tạo tài khoản Super Admin (nếu chưa tồn tại)
+            User adminUser = userRepository.findByEmail("admin");
+            boolean adminCreated = false;
+            if (adminUser == null) {
+                adminUser = new User();
+                adminUser.setEmail("admin");
+                adminUser.setFullName("Super Admin");
+                adminUser.setPassword(passwordEncoder.encode("admin"));
+                adminUser.setRole(USER_ROLE.ROLE_ADMIN);
+                adminUser = userRepository.save(adminUser);
+                
+                Cart adminCart = new Cart();
+                adminCart.setCustomer(adminUser);
+                cartRepository.save(adminCart);
+                
+                adminCreated = true;
+            }
+
             return ResponseEntity.ok(String.format(
                 "Đã seed dữ liệu mẫu thành công!\n" +
                 "- Số chủ nhà hàng tạo mới: %d\n" +
                 "- Số nhà hàng tạo mới: %d\n" +
                 "- Số danh mục tạo mới: %d\n" +
                 "- Số món ăn tạo mới: %d\n" +
+                "- Đã tạo tài khoản Admin tổng: %s\n" +
                 "\nTất cả các tài khoản chủ nhà hàng đều có mật khẩu mặc định là: 123456\n" +
-                "Ví dụ tài khoản đăng nhập: batdan_owner@food.com, pizza4ps_owner@food.com, highlands_owner@food.com",
-                usersCreated, restaurantsCreated, categoriesCreated, foodsCreated
+                "Ví dụ tài khoản đăng nhập: batdan_owner@food.com, pizza4ps_owner@food.com, highlands_owner@food.com\n" +
+                "Tài khoản Admin tổng: admin / admin",
+                usersCreated, restaurantsCreated, categoriesCreated, foodsCreated, (adminCreated ? "THÀNH CÔNG" : "ĐÃ TỒN TẠI")
             ));
 
         } catch (Exception e) {

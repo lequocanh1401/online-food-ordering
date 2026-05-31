@@ -52,6 +52,9 @@ public class AuthController {
         User createdUser = new User();
         createdUser.setEmail(user.getEmail());
         createdUser.setFullName(user.getFullName());
+        if (user.getRole() == USER_ROLE.ROLE_ADMIN) {
+            throw new Exception("Registration as ADMIN is not allowed.");
+        }
         createdUser.setRole(user.getRole() != null ? user.getRole() : USER_ROLE.ROLE_CUSTOMER);
         createdUser.setPassword(passwordEncoder.encode(user.getPassword()));
 

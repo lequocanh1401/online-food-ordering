@@ -24,7 +24,7 @@ const FacebookIcon = () => (
 const initialValues = { email: "", password: "" };
 
 const validationSchema = Yup.object().shape({
-    email: Yup.string().email("Email không hợp lệ").required("Vui lòng nhập Email"),
+    email: Yup.string().required("Vui lòng nhập Email hoặc Tên đăng nhập"),
     password: Yup.string().required("Vui lòng nhập mật khẩu")
 });
 

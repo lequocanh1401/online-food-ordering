@@ -128,7 +128,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new Exception("Không tìm thấy đánh giá.");
         }
         Review review = reviewOpt.get();
-        if (!review.getCustomer().getId().equals(user.getId())) {
+        if (!review.getCustomer().getId().equals(user.getId()) && user.getRole() != com.anh.model.USER_ROLE.ROLE_ADMIN) {
             throw new Exception("Bạn không có quyền xóa đánh giá của người khác.");
         }
         reviewRepository.delete(review);

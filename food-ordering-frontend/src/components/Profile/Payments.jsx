@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getUsersOrders, cancelOrder } from '../../State/Order/Action';
-import { Box, Card, Button, Typography, Divider, CircularProgress } from '@mui/material';
+import { Box, Card, Button, Typography, Divider, CircularProgress, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { api } from '../../config/api';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 
@@ -10,6 +10,8 @@ export const Payments = () => {
     const jwt = localStorage.getItem("jwt");
     const order = useSelector(store => store.order);
     const [loadingOrderId, setLoadingOrderId] = useState(null);
+    const [openConfirm, setOpenConfirm] = useState(false);
+    const [selectedOrderId, setSelectedOrderId] = useState(null);
 
     // Kéo lịch sử đơn hàng về
     useEffect(() => {
@@ -37,10 +39,17 @@ export const Payments = () => {
         }
     };
 
-    const handleCancelOrder = (orderId) => {
-        if (window.confirm(`Bạn có chắc chắn muốn hủy đơn hàng #${orderId} không?`)) {
-            dispatch(cancelOrder({ orderId, jwt }));
+    const handleCancelClick = (orderId) => {
+        setSelectedOrderId(orderId);
+        setOpenConfirm(true);
+    };
+
+    const handleConfirmCancel = () => {
+        if (jwt && selectedOrderId) {
+            dispatch(cancelOrder({ orderId: selectedOrderId, jwt }));
         }
+        setOpenConfirm(false);
+        setSelectedOrderId(null);
     };
 
     return (
@@ -89,7 +98,7 @@ export const Payments = () => {
                             <div className="flex justify-end gap-3">
                                 <Button
                                     variant="outlined"
-                                    onClick={() => handleCancelOrder(unpaidOrder.id)}
+                                    onClick={() => handleCancelClick(unpaidOrder.id)}
                                     sx={{
                                         color: '#ef4444',
                                         borderColor: '#ef4444',
@@ -128,6 +137,39 @@ export const Payments = () => {
                     </div>
                 )}
             </div>
+
+            {/* Dialog xác nhận hủy đơn hàng đẹp */}
+            <Dialog
+                open={openConfirm}
+                onClose={() => setOpenConfirm(false)}
+                PaperProps={{
+                    style: { backgroundColor: '#111827', color: 'white', border: '1px solid #1f2937', borderRadius: '12px' }
+                }}
+            >
+                <DialogTitle className='border-b border-gray-800 text-pink-500 font-bold'>Xác nhận hủy đơn hàng?</DialogTitle>
+                <DialogContent className='mt-4'>
+                    <DialogContentText style={{ color: '#d1d5db' }}>
+                        Bạn có chắc chắn muốn hủy đơn hàng #{selectedOrderId} không? Hành động này sẽ xóa đơn và không thể hoàn tác.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions className='p-4 border-t border-gray-800 gap-2'>
+                    <Button onClick={() => setOpenConfirm(false)} style={{ color: '#9ca3af', fontWeight: 'bold' }}>
+                        Hủy bỏ
+                    </Button>
+                    <Button 
+                        onClick={handleConfirmCancel} 
+                        variant='contained' 
+                        sx={{ 
+                            bgcolor: '#dc2626', 
+                            '&:hover': { bgcolor: '#b91c1c' },
+                            fontWeight: 'bold',
+                            borderRadius: '8px'
+                        }}
+                    >
+                        Đồng Ý Hủy
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

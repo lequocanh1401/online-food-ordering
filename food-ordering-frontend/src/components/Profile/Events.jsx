@@ -181,6 +181,9 @@ export const Events = () => {
                                         <Typography variant="body2" sx={{ color: '#9ca3af' }}>
                                             <strong>Loại giảm giá:</strong> {item.discountType === "PERCENTAGE" ? "Giảm theo %" : "Giảm tiền mặt"}
                                         </Typography>
+                                        <Typography variant="body2" sx={{ color: '#9ca3af' }}>
+                                            <strong>Đơn tối thiểu:</strong> {item.minimumOrderValue ? `${item.minimumOrderValue.toLocaleString()} đ` : "0 đ"}
+                                        </Typography>
                                         <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#10b981' }}>
                                             {item.discountType === "PERCENTAGE" ? `${item.discountValue}%` : `${item.discountValue?.toLocaleString()} đ`}
                                         </Typography>

@@ -39,12 +39,17 @@ export const Cart = () => {
         }
 
         try {
-            const { data } = await api.get(`/api/coupons/validate/${encodeURIComponent(promoCode.trim().toUpperCase())}/restaurant/${restaurantId}`, {
+            const { data } = await api.get(`/api/coupons/validate?code=${encodeURIComponent(promoCode.trim().toUpperCase())}&restaurantId=${restaurantId}`, {
                 headers: { Authorization: `Bearer ${jwt}` }
             });
             if (data && data.active) {
-                setAppliedCoupon(data);
-                setPromoError("");
+                if (cartTotal < (data.minimumOrderValue || 0)) {
+                    setPromoError(`Đơn hàng tối thiểu từ ${(data.minimumOrderValue || 0).toLocaleString()} đ để áp dụng mã này.`);
+                    setAppliedCoupon(null);
+                } else {
+                    setAppliedCoupon(data);
+                    setPromoError("");
+                }
             } else {
                 setPromoError("Mã giảm giá đã hết hiệu lực");
                 setAppliedCoupon(null);
@@ -77,6 +82,13 @@ export const Cart = () => {
             dispatch(findUserCart(jwt));
         }
     }, [dispatch, jwt]);
+
+    useEffect(() => {
+        if (appliedCoupon && cartTotal < (appliedCoupon.minimumOrderValue || 0)) {
+            setAppliedCoupon(null);
+            setPromoError(`Mã giảm giá ${appliedCoupon.code} đã bị gỡ do đơn hàng chưa đạt giá trị tối thiểu ${(appliedCoupon.minimumOrderValue || 0).toLocaleString()} đ.`);
+        }
+    }, [cartTotal, appliedCoupon]);
 
     const formik = useFormik({
         initialValues: { streetAddress: "", state: "", pincode: "", city: "" },

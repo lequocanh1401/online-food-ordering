@@ -20,6 +20,8 @@ public class Coupon {
     private Long discountValue;
     private boolean active = true;
 
+    private Long minimumOrderValue = 0L;
+
     @ManyToOne
     @JsonIgnoreProperties({"owner", "orders", "foods", "images"})
     private Restaurant restaurant;

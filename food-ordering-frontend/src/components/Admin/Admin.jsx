@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import { AdminSidebar } from './AdminSidebar';
+import { AdminSidebar } from './AdminSideBar';
 import { Dashboard } from './Dashboard';
 import { Orders } from './Orders';
 import { Menu } from './Menu';
@@ -13,12 +13,19 @@ import { CreateMenuForm } from './CreateMenuForm'; // Import form thêm món ăn
 import { useDispatch, useSelector } from 'react-redux';
 import { getRestaurantByUserId } from '../../State/Restaurant/Action';
 
+// Super Admin Components
+import { SuperAdminDashboard } from './SuperAdminDashboard';
+import { SuperAdminReviews } from './SuperAdminReviews';
+import { SuperAdminCoupons } from './SuperAdminCoupons';
+
 export const Admin = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const jwt = localStorage.getItem("jwt");
     const { restaurant, auth } = useSelector(store => store);
     const handleClose = () => { };
+
+    const isSuperAdmin = auth.user && auth.user.role === "ROLE_ADMIN";
 
     useEffect(() => {
         if (!jwt) {
@@ -29,7 +36,7 @@ export const Admin = () => {
     }, [jwt, auth.user, navigate]);
 
     useEffect(() => {
-        if (jwt && auth.user && (auth.user.role === "ROLE_RESTAURANT_OWNER" || auth.user.role === "ROLE_ADMIN")) {
+        if (jwt && auth.user && auth.user.role === "ROLE_RESTAURANT_OWNER") {
             dispatch(getRestaurantByUserId(jwt));
         }
     }, [jwt, auth.user, dispatch]);
@@ -42,7 +49,7 @@ export const Admin = () => {
         );
     }
 
-    if (!restaurant?.usersRestaurant || !restaurant?.usersRestaurant?.id) {
+    if (!isSuperAdmin && (!restaurant?.usersRestaurant || !restaurant?.usersRestaurant?.id)) {
         return (
             <div className="pt-5 pb-20">
                 <CreateRestaurantForm />
@@ -57,14 +64,24 @@ export const Admin = () => {
             </div>
             <div className='lg:w-[80%] pb-10'>
                 <Routes>
-                    <Route path='/' element={<Dashboard />} />
-                    <Route path='/orders' element={<Orders />} />
-                    <Route path='/menu' element={<Menu />} />
-                    <Route path='/add-menu' element={<CreateMenuForm />} /> {/* Đường dẫn gọi form */}
-                    <Route path='/ingredients' element={<AdminIngredients />} />
-                    <Route path='/category' element={<FoodCategory />} />
-                    <Route path='/event' element={<Events />} />
-                    <Route path='/details' element={<RestaurantDetails />} />
+                    {isSuperAdmin ? (
+                        <>
+                            <Route path='/' element={<SuperAdminDashboard />} />
+                            <Route path='/reviews' element={<SuperAdminReviews />} />
+                            <Route path='/coupons' element={<SuperAdminCoupons />} />
+                        </>
+                    ) : (
+                        <>
+                            <Route path='/' element={<Dashboard />} />
+                            <Route path='/orders' element={<Orders />} />
+                            <Route path='/menu' element={<Menu />} />
+                            <Route path='/add-menu' element={<CreateMenuForm />} /> {/* Đường dẫn gọi form */}
+                            <Route path='/ingredients' element={<AdminIngredients />} />
+                            <Route path='/category' element={<FoodCategory />} />
+                            <Route path='/event' element={<Events />} />
+                            <Route path='/details' element={<RestaurantDetails />} />
+                        </>
+                    )}
                 </Routes>
             </div>
         </div>

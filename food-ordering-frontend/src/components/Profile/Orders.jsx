@@ -70,11 +70,9 @@ export const Orders = () => {
 
             <div className='space-y-5 w-full lg:w-1/2 pb-10'>
                 {filteredOrders.length > 0 ? (
-                    filteredOrders.map((orderItem) =>
-                        orderItem.items?.map((item) => (
-                            <OrderCard key={item.id} item={item} order={orderItem} />
-                        ))
-                    )
+                    filteredOrders.map((orderItem) => (
+                        <OrderCard key={orderItem.id} order={orderItem} />
+                    ))
                 ) : (
                     <p className='text-center text-gray-400 mt-10'>
                         Không tìm thấy đơn hàng nào ở trạng thái này.

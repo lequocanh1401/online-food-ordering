@@ -31,6 +31,17 @@ public class CouponServiceImpl implements CouponService {
     }
 
     @Override
+    public Coupon createGlobalCoupon(Coupon coupon) throws Exception {
+        coupon.setRestaurant(null);
+        coupon.setActive(true);
+        // Kiểm tra xem mã này đã tồn tại chưa (toàn cục hoặc cho bất kì nhà hàng nào)
+        if (couponRepository.findByCode(coupon.getCode()).isPresent()) {
+            throw new Exception("Coupon code already exists");
+        }
+        return couponRepository.save(coupon);
+    }
+
+    @Override
     public void deleteCoupon(Long couponId) throws Exception {
         couponRepository.deleteById(couponId);
     }
@@ -42,8 +53,15 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public Coupon findCouponByCode(String code, Long restaurantId) throws Exception {
-        return couponRepository.findByCodeAndRestaurantId(code, restaurantId)
-                .orElseThrow(() -> new Exception("Coupon code is invalid or expired"));
+        java.util.Optional<Coupon> opt = couponRepository.findByCodeAndRestaurantId(code, restaurantId);
+        if (!opt.isPresent()) {
+            // Kiểm tra xem có phải mã toàn sàn không (restaurant == null)
+            java.util.Optional<Coupon> globalOpt = couponRepository.findByCode(code);
+            if (globalOpt.isPresent() && globalOpt.get().getRestaurant() == null) {
+                opt = globalOpt;
+            }
+        }
+        return opt.orElseThrow(() -> new Exception("Coupon code is invalid or expired"));
     }
 
     @Override

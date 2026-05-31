@@ -10,6 +10,8 @@ import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { API_URL } from '../../config/api';
 
 export const Home = () => {
     const dispatch = useDispatch();
@@ -21,9 +23,22 @@ export const Home = () => {
     const [selectedCity, setSelectedCity] = useState("ALL");
     const [selectedCuisine, setSelectedCuisine] = useState("ALL");
     const [copiedCode, setCopiedCode] = useState("");
+    const [promos, setPromos] = useState([]);
+
+    const fetchCoupons = async () => {
+        try {
+            const { data } = await axios.get(`${API_URL}/api/coupons`);
+            // Chỉ lấy các coupon đang active
+            const activeCoupons = data.filter(c => c.active);
+            setPromos(activeCoupons);
+        } catch (error) {
+            console.error("Lỗi khi tải mã giảm giá:", error);
+        }
+    };
 
     useEffect(() => {
         dispatch(getAllRestaurantsAction(jwt));
+        fetchCoupons();
     }, [dispatch, jwt]);
 
     const handleCopyCode = (code) => {
@@ -51,37 +66,6 @@ export const Home = () => {
         { label: "Gà Rán & Fastfood", value: "Gà Rán & Fastfood" },
         { label: "Lẩu & Nướng", value: "Lẩu & Nướng" },
         { label: "Steak & Wine", value: "Steak & Wine" }
-    ];
-
-    const promos = [
-        {
-            title: "ƯU ĐÃI THÀNH VIÊN MỚI",
-            discount: "GIẢM 50%",
-            code: "HAPPYFOOD50",
-            description: "Dành cho khách hàng mới đăng ký tài khoản lần đầu. Áp dụng cho mọi nhà hàng.",
-            color: "from-pink-500 to-rose-500"
-        },
-        {
-            title: "MIỄN PHÍ VẬN CHUYỂN",
-            discount: "FREESHIP MAX",
-            code: "FREESHIPMAX",
-            description: "Miễn phí vận chuyển lên tới 30.000đ cho đơn hàng từ 150.000đ.",
-            color: "from-purple-500 to-indigo-500"
-        },
-        {
-            title: "ƯU ĐÃI ẨM THỰC XANH",
-            discount: "GIẢM 30.000đ",
-            code: "EATGREEN30",
-            description: "Áp dụng khi đặt Salad, Mỳ chay hoặc các món ăn tốt cho sức khỏe.",
-            color: "from-emerald-500 to-teal-500"
-        },
-        {
-            title: "ĐỒNG GIÁ BỮA TRƯA",
-            discount: "COMBO 99K",
-            code: "HE99K",
-            description: "Đồng giá combo cơm trưa hè kèm 1 cốc trà đá mát lạnh tại Cơm Tấm Sài Gòn.",
-            color: "from-amber-500 to-orange-500"
-        }
     ];
 
     // Lọc nhà hàng theo bộ lọc pill
@@ -161,47 +145,69 @@ export const Home = () => {
                     <p className='text-gray-500 text-sm mb-8'>Nhận ngay mã giảm giá siêu hot, số lượng có hạn!</p>
 
                     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
-                        {promos.map((promo, index) => (
-                            <div 
-                                key={index} 
-                                className='bg-gradient-to-br from-gray-950 to-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col justify-between hover:border-gray-700 transition-all duration-300 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] group relative overflow-hidden'
-                            >
-                                <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${promo.color} opacity-10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500`}></div>
-                                
-                                <div>
-                                    <div className='flex justify-between items-center mb-3'>
-                                        <span className='text-xs font-bold text-gray-500 tracking-wider'>{promo.title}</span>
-                                        <span className={`text-sm font-black bg-gradient-to-r ${promo.color} text-transparent bg-clip-text`}>HOT</span>
-                                    </div>
-                                    <h3 className='text-2xl font-extrabold text-white mb-2'>{promo.discount}</h3>
-                                    <p className='text-gray-400 text-xs leading-relaxed mb-4'>{promo.description}</p>
-                                </div>
+                        {promos.length > 0 ? (
+                            promos.map((promo, index) => {
+                                const colors = [
+                                    "from-pink-500 to-rose-500",
+                                    "from-purple-500 to-indigo-500",
+                                    "from-emerald-500 to-teal-500",
+                                    "from-amber-500 to-orange-500"
+                                ];
+                                const color = colors[index % colors.length];
+                                const title = promo.restaurant ? promo.restaurant.name.toUpperCase() : "ƯU ĐÃI TOÀN SÀN";
+                                const discountText = promo.discountType === "PERCENTAGE" ? `GIẢM ${promo.discountValue}%` : `GIẢM ${promo.discountValue?.toLocaleString()}đ`;
+                                const description = (promo.restaurant 
+                                    ? `Áp dụng riêng cho các đơn hàng đặt tại nhà hàng ${promo.restaurant.name}.`
+                                    : "Áp dụng cho mọi đơn hàng của bất kỳ nhà hàng nào trên toàn hệ thống.") +
+                                    (promo.minimumOrderValue ? ` Đơn hàng tối thiểu từ ${promo.minimumOrderValue.toLocaleString()} đ.` : "");
 
-                                <div className='mt-4 pt-4 border-t border-gray-800 flex items-center justify-between'>
-                                    <div className='bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-pink-500 select-all'>
-                                        {promo.code}
-                                    </div>
-                                    <Button
-                                        size="small"
-                                        onClick={() => handleCopyCode(promo.code)}
-                                        variant="outlined"
-                                        sx={{ 
-                                            borderColor: copiedCode === promo.code ? '#10b981' : 'rgba(233,30,99,0.3)',
-                                            color: copiedCode === promo.code ? '#10b981' : '#e91e63',
-                                            textTransform: 'none',
-                                            fontWeight: 'bold',
-                                            '&:hover': {
-                                                borderColor: copiedCode === promo.code ? '#10b981' : '#e91e63',
-                                                bgcolor: 'rgba(233,30,99,0.05)'
-                                            }
-                                        }}
-                                        startIcon={copiedCode === promo.code ? null : <ContentCopyIcon sx={{ fontSize: 14 }} />}
+                                return (
+                                    <div 
+                                        key={promo.id} 
+                                        className='bg-gradient-to-br from-gray-950 to-gray-900 border border-gray-800 rounded-2xl p-5 flex flex-col justify-between hover:border-gray-700 transition-all duration-300 hover:shadow-[0_10px_20px_rgba(0,0,0,0.4)] group relative overflow-hidden'
                                     >
-                                        {copiedCode === promo.code ? "Đã sao chép" : "Lấy mã"}
-                                    </Button>
-                                </div>
+                                        <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${color} opacity-10 rounded-full blur-xl group-hover:scale-150 transition-transform duration-500`}></div>
+                                        
+                                        <div>
+                                            <div className='flex justify-between items-center mb-3'>
+                                                <span className='text-xs font-bold text-gray-500 tracking-wider truncate max-w-[150px]' title={title}>{title}</span>
+                                                <span className={`text-sm font-black bg-gradient-to-r ${color} text-transparent bg-clip-text`}>HOT</span>
+                                            </div>
+                                            <h3 className='text-2xl font-extrabold text-white mb-2'>{discountText}</h3>
+                                            <p className='text-gray-400 text-xs leading-relaxed mb-4'>{description}</p>
+                                        </div>
+
+                                        <div className='mt-4 pt-4 border-t border-gray-800 flex items-center justify-between'>
+                                            <div className='bg-gray-900 border border-gray-800 px-3 py-1.5 rounded-lg text-xs font-mono font-bold text-pink-500 select-all'>
+                                                {promo.code}
+                                            </div>
+                                            <Button
+                                                size="small"
+                                                onClick={() => handleCopyCode(promo.code)}
+                                                variant="outlined"
+                                                sx={{ 
+                                                    borderColor: copiedCode === promo.code ? '#10b981' : 'rgba(233,30,99,0.3)',
+                                                    color: copiedCode === promo.code ? '#10b981' : '#e91e63',
+                                                    textTransform: 'none',
+                                                    fontWeight: 'bold',
+                                                    '&:hover': {
+                                                        borderColor: copiedCode === promo.code ? '#10b981' : '#e91e63',
+                                                        bgcolor: 'rgba(233,30,99,0.05)'
+                                                    }
+                                                }}
+                                                startIcon={copiedCode === promo.code ? null : <ContentCopyIcon sx={{ fontSize: 14 }} />}
+                                            >
+                                                {copiedCode === promo.code ? "Đã sao chép" : "Lấy mã"}
+                                            </Button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className='col-span-full py-8 text-center text-gray-500 bg-gray-950/20 border border-gray-900 rounded-2xl'>
+                                Hiện tại chưa có mã giảm giá nào đang diễn ra. Quay lại sau bạn nhé!
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
             </section>
