@@ -6,11 +6,10 @@ import WarningIcon from '@mui/icons-material/Warning';
 import { useFormik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { createEventAction, getRestaurantsEvents, deleteEventAction, updateEventAction } from '../../State/Restaurant/Action';
-
+import dayjs from 'dayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
-import dayjs from 'dayjs';
 
 const style = {
     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
@@ -28,6 +27,23 @@ export const Events = () => {
     const jwt = localStorage.getItem("jwt");
     const restaurant = useSelector(store => store.restaurant);
 
+    // Custom confirm delete modal states
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
+
+    const handleDeleteClick = (id) => {
+        setDeleteTargetId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (deleteTargetId) {
+            dispatch(deleteEventAction({ eventId: deleteTargetId, jwt }));
+        }
+        setConfirmOpen(false);
+        setDeleteTargetId(null);
+    };
+
     const [editOpen, setEditOpen] = useState(false);
     const [editEventId, setEditEventId] = useState(null);
     const [editForm, setEditForm] = useState({
@@ -37,23 +53,6 @@ export const Events = () => {
         startedAt: null,
         endsAt: null
     });
-
-    // Custom confirm delete modal states
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [deleteEventId, setDeleteEventId] = useState(null);
-
-    const handleDeleteClick = (id) => {
-        setDeleteEventId(id);
-        setConfirmOpen(true);
-    };
-
-    const handleConfirmDelete = () => {
-        if (deleteEventId) {
-            dispatch(deleteEventAction({ eventId: deleteEventId, jwt }));
-        }
-        setConfirmOpen(false);
-        setDeleteEventId(null);
-    };
 
     useEffect(() => {
         if (restaurant.usersRestaurant?.id) {

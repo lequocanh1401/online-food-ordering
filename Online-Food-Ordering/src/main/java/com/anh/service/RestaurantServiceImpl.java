@@ -7,6 +7,7 @@ import com.anh.model.User;
 import com.anh.repository.AddressRepository;
 import com.anh.repository.RestaurantRepository;
 import com.anh.repository.UserRepository;
+import com.anh.repository.ReviewRepository;
 import com.anh.request.CreateRestaurantRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,23 @@ public class RestaurantServiceImpl implements RestaurantService {
     private AddressRepository addressRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    private void populateRestaurantRating(Restaurant restaurant) {
+        if (restaurant != null) {
+            Double avgRating = reviewRepository.getAverageRatingForRestaurant(restaurant.getId());
+            Long count = reviewRepository.getCountForRestaurant(restaurant.getId());
+            restaurant.setAverageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
+            restaurant.setTotalReviews(count != null ? count.intValue() : 0);
+        }
+    }
+
+    private void populateRestaurantRatings(List<Restaurant> restaurants) {
+        for (Restaurant r : restaurants) {
+            populateRestaurantRating(r);
+        }
+    }
 
     @Override
     public Restaurant createRestaurant(CreateRestaurantRequest req, User user) {
@@ -42,7 +60,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setOwner(user);
         restaurant.setOpen(true);
 
-        return restaurantRepository.save(restaurant);
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        populateRestaurantRating(savedRestaurant);
+        return savedRestaurant;
     }
 
     @Override
@@ -80,7 +100,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             existingAddress.setStateProvince(updatedAddress.getStateProvince());
             restaurant.setAddress(addressRepository.save(existingAddress));
         }
-        return restaurantRepository.save(restaurant);
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        populateRestaurantRating(savedRestaurant);
+        return savedRestaurant;
     }
 
     @Override
@@ -91,12 +113,16 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<Restaurant> getAllRestaurant() {
-        return restaurantRepository.findAll();
+        List<Restaurant> list = restaurantRepository.findAll();
+        populateRestaurantRatings(list);
+        return list;
     }
 
     @Override
     public List<Restaurant> searchRestaurant(String keyword) {
-        return restaurantRepository.findBySearchQuery(keyword);
+        List<Restaurant> list = restaurantRepository.findBySearchQuery(keyword);
+        populateRestaurantRatings(list);
+        return list;
     }
 
     @Override
@@ -105,7 +131,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (opt.isEmpty()) {
             throw new Exception("Restaurant not found with id " + id);
         }
-        return opt.get();
+        Restaurant restaurant = opt.get();
+        populateRestaurantRating(restaurant);
+        return restaurant;
     }
 
     @Override
@@ -114,6 +142,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (restaurant == null) {
             throw new Exception("Restaurant not found with owner id " + userId);
         }
+        populateRestaurantRating(restaurant);
         return restaurant;
     }
 
@@ -150,6 +179,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     public Restaurant updateRestaurantStatus(Long id) throws Exception {
         Restaurant restaurant = findRestaurantById(id);
         restaurant.setOpen(!restaurant.isOpen());
-        return restaurantRepository.save(restaurant);
+        Restaurant savedRestaurant = restaurantRepository.save(restaurant);
+        populateRestaurantRating(savedRestaurant);
+        return savedRestaurant;
     }
 }

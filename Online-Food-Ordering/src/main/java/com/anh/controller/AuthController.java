@@ -97,6 +97,110 @@ public class AuthController {
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }
 
+    @PostMapping("/google")
+    public ResponseEntity<AuthResponse> googleLogin(@RequestBody java.util.Map<String, String> request) throws Exception {
+        String idToken = request.get("token");
+        if (idToken == null || idToken.isEmpty()) {
+            throw new Exception("Token is required");
+        }
+
+        // Hỗ trợ chế độ Demo cho môi trường Test/Local development
+        if (idToken.startsWith("demo:")) {
+            String[] parts = idToken.split(":");
+            String email = parts[1];
+            String name = parts.length > 2 ? parts[2] : email.split("@")[0];
+            return handleSocialLogin(email, name);
+        }
+
+        String googleUrl = "https://oauth2.googleapis.com/tokeninfo?id_token=" + idToken;
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+        
+        try {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> payload = restTemplate.getForObject(googleUrl, java.util.Map.class);
+            if (payload == null || payload.containsKey("error_description")) {
+                throw new Exception("Invalid Google Token");
+            }
+
+            String email = (String) payload.get("email");
+            String name = (String) payload.get("name");
+
+            return handleSocialLogin(email, name);
+        } catch (Exception e) {
+            throw new Exception("Google Authentication Failed: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/facebook")
+    public ResponseEntity<AuthResponse> facebookLogin(@RequestBody java.util.Map<String, String> request) throws Exception {
+        String accessToken = request.get("token");
+        if (accessToken == null || accessToken.isEmpty()) {
+            throw new Exception("Token is required");
+        }
+
+        // Hỗ trợ chế độ Demo cho môi trường Test/Local development
+        if (accessToken.startsWith("demo:")) {
+            String[] parts = accessToken.split(":");
+            String email = parts[1];
+            String name = parts.length > 2 ? parts[2] : email.split("@")[0];
+            return handleSocialLogin(email, name);
+        }
+
+        String facebookUrl = "https://graph.facebook.com/me?fields=id,name,email&access_token=" + accessToken;
+        org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
+
+        try {
+            @SuppressWarnings("unchecked")
+            java.util.Map<String, Object> payload = restTemplate.getForObject(facebookUrl, java.util.Map.class);
+            if (payload == null || payload.containsKey("error")) {
+                throw new Exception("Invalid Facebook Token");
+            }
+
+            String email = (String) payload.get("email");
+            String name = (String) payload.get("name");
+
+            if (email == null || email.isEmpty()) {
+                email = (String) payload.get("id") + "@facebook.com";
+            }
+
+            return handleSocialLogin(email, name);
+        } catch (Exception e) {
+            throw new Exception("Facebook Authentication Failed: " + e.getMessage());
+        }
+    }
+
+    private ResponseEntity<AuthResponse> handleSocialLogin(String email, String name) throws Exception {
+        User user = userRepository.findByEmail(email);
+        boolean isNewUser = false;
+        
+        if (user == null) {
+            isNewUser = true;
+            user = new User();
+            user.setEmail(email);
+            user.setFullName(name != null ? name : email.split("@")[0]);
+            user.setRole(USER_ROLE.ROLE_CUSTOMER);
+            user.setPassword(passwordEncoder.encode(java.util.UUID.randomUUID().toString()));
+            user = userRepository.save(user);
+
+            Cart cart = new Cart();
+            cart.setCustomer(user);
+            cartRepository.save(cart);
+        }
+
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(user.getEmail());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        String jwt = jwtProvider.generateToken(authentication);
+
+        AuthResponse authResponse = new AuthResponse();
+        authResponse.setJwt(jwt);
+        authResponse.setMessage(isNewUser ? "Social Register Success" : "Social Login Success");
+        authResponse.setRole(user.getRole());
+
+        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+    }
+
     private Authentication authenticate(String username, String password) {
         UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 

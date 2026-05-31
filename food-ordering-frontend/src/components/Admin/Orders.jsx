@@ -3,9 +3,10 @@ import { Card, FormControl, RadioGroup, FormControlLabel, Radio, Typography } fr
 import { OrderTable } from './OrderTable';
 
 const orderStatus = [
+    { label: "All (Tất cả)", value: "ALL" },
     { label: "Pending (Đang chờ)", value: "PENDING" },
-    { label: "Completed (Hoàn thành)", value: "COMPLETED" },
-    { label: "All (Tất cả)", value: "ALL" }
+    { label: "Out For Delivery (Đang giao)", value: "OUT_FOR_DELIVERY" },
+    { label: "Completed (Hoàn thành)", value: "COMPLETED" }
 ];
 
 export const Orders = () => {

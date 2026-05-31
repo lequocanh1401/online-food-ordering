@@ -8,6 +8,7 @@ import { Cart } from '../components/Cart/Cart';
 import { Profile } from '../components/Profile/Profile';
 import { PaymentSuccess } from '../components/PaymentSuccess/PaymentSuccess'; // 👈 Import trang thành công vào đây
 import { PaymentFail } from '../components/PaymentFail/PaymentFail';
+import { SearchPage } from '../components/Search/SearchPage';
 
 export const CustomerRoutes = () => {
     const navigate = useNavigate();
@@ -28,6 +29,7 @@ export const CustomerRoutes = () => {
                 <Route path='/restaurant/:city/:title/:id' element={<RestaurantDetails />} />
                 <Route path='/cart' element={<Cart />} />
                 <Route path='/my-profile/*' element={<Profile />} />
+                <Route path='/search' element={<SearchPage />} />
 
                 {/* 👈 Cấu hình đường dẫn hứng link trả về từ Stripe */}
                 <Route path='/payment/success/:id' element={<PaymentSuccess />} />

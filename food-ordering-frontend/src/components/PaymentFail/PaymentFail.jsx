@@ -43,14 +43,14 @@ export const PaymentFail = () => {
                 {/* Các nút điều hướng nhanh */}
                 <div className="flex flex-col w-full gap-3 pt-2">
                     <Button
-                        onClick={() => navigate("/cart")}
+                        onClick={() => navigate("/my-profile/orders")}
                         variant="contained"
                         fullWidth
                         size="large"
                         className="bg-gradient-to-r from-rose-500 to-amber-600 hover:from-rose-600 hover:to-amber-700 font-bold tracking-wide py-3"
                         sx={{ borderRadius: 2 }}
                     >
-                        Quay Lại Giỏ Hàng
+                        Quay Lại Đơn Hàng
                     </Button>
 
                     <Button

@@ -27,6 +27,8 @@ public class OrderServiceImpl implements OrderService {
     private RestaurantService restaurantService;
     @Autowired
     private CartService cartService;
+    @Autowired
+    private CouponRepository couponRepository;
 
     @Override
     public Order createOrder(CreateOrderRequest orderReq, User user) throws Exception {
@@ -60,11 +62,6 @@ public class OrderServiceImpl implements OrderService {
         Address shippingAddress = orderReq.getDeliveryAddress();
         Address savedAddress = addressRepository.save(shippingAddress);
 
-        if(!managedUser.getAddresses().contains(savedAddress)){
-            managedUser.getAddresses().add(savedAddress);
-            userRepository.save(managedUser);
-        }
-
         // 2. Khởi tạo thực thể Order
         Order createdOrder = new Order();
         createdOrder.setCustomer(managedUser);
@@ -73,7 +70,7 @@ public class OrderServiceImpl implements OrderService {
         createdOrder.setDeliveryAddress(savedAddress);
         createdOrder.setRestaurant(restaurant);
 
-        createdOrder.setTotalAmount(cart.getTotal());
+        // Sẽ được thiết lập cùng với totalPrice sau khi tính toán xong
 
         List<OrderItem> orderItems = new ArrayList<>();
 
@@ -96,8 +93,31 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Long totalPrice = cartService.calculateCartTotals(cart);
+
+        // Áp dụng Coupon giảm giá nếu có gửi kèm trong yêu cầu đặt hàng
+        if (orderReq.getCouponCode() != null && !orderReq.getCouponCode().trim().isEmpty()) {
+            java.util.Optional<com.anh.model.Coupon> couponOpt = couponRepository.findByCodeAndRestaurantId(orderReq.getCouponCode(), restaurant.getId());
+            if (couponOpt.isPresent()) {
+                com.anh.model.Coupon coupon = couponOpt.get();
+                if (coupon.isActive()) {
+                    long discount = 0;
+                    if ("PERCENTAGE".equalsIgnoreCase(coupon.getDiscountType())) {
+                        discount = (totalPrice * coupon.getDiscountValue()) / 100;
+                    } else if ("FLAT".equalsIgnoreCase(coupon.getDiscountType())) {
+                        discount = coupon.getDiscountValue();
+                    }
+                    // Đảm bảo số tiền giảm giá không âm và không vượt quá tổng tiền của giỏ hàng
+                    discount = Math.max(0, Math.min(discount, totalPrice));
+                    createdOrder.setCouponCode(coupon.getCode());
+                    createdOrder.setDiscountAmount(discount);
+                    totalPrice = totalPrice - discount;
+                }
+            }
+        }
+
         createdOrder.setItems(orderItems);
         createdOrder.setTotalPrice(totalPrice);
+        createdOrder.setTotalAmount(totalPrice);
 
         Order savedOrder = orderRepository.save(createdOrder);
 
@@ -138,8 +158,8 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<Order> getRestaurantsOrder(Long restaurantId, String orderStatus) throws Exception {
         List<Order> orders = orderRepository.findByRestaurantId(restaurantId);
-        if(orderStatus != null) {
-            orders = orders.stream().filter(order -> order.getOrderStatus().equals(orderStatus)).toList();
+        if(orderStatus != null && !orderStatus.trim().isEmpty() && !orderStatus.equalsIgnoreCase("ALL")) {
+            orders = orders.stream().filter(order -> order.getOrderStatus().equalsIgnoreCase(orderStatus)).toList();
         }
         return orders;
     }

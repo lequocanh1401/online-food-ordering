@@ -1,18 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Avatar, Badge, IconButton, Box } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import { useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { SearchModal } from './SearchModal';
+import { useSelector, useDispatch } from 'react-redux';
+import { findUserCart } from '../../State/Cart/Action';
 
 export const Navbar = () => {
     const navigate = useNavigate();
-    const [searchOpen, setSearchOpen] = useState(false);
+    const dispatch = useDispatch();
+    const jwt = localStorage.getItem("jwt");
 
     // Kéo thông tin người dùng và giỏ hàng từ Redux để hiển thị số lượng món ăn
     const auth = useSelector(store => store.auth);
     const cart = useSelector(store => store.cart);
+
+    // Tự động kéo giỏ hàng khi người dùng đã đăng nhập thành công
+    useEffect(() => {
+        if (jwt && auth.user) {
+            dispatch(findUserCart(jwt));
+        }
+    }, [dispatch, jwt, auth.user]);
+
+    // Tính tổng số lượng tất cả món ăn trong giỏ
+    const getCartItemsCount = () => {
+        const items = cart.cart?.item || cart.cart?.items || cart.cartItems || [];
+        return items.reduce((acc, item) => acc + (item.quantity || 0), 0);
+    };
 
     const handleAvatarClick = () => {
         if (auth.user?.role === "ROLE_CUSTOMER") {
@@ -34,7 +48,7 @@ export const Navbar = () => {
             {/* Các Nút Chức Năng Góc Phải */}
             <div className='flex items-center space-x-2 lg:space-x-10'>
                 <div className=''>
-                    <IconButton onClick={() => setSearchOpen(true)}>
+                    <IconButton onClick={() => navigate("/search")}>
                         <SearchIcon sx={{ fontSize: "1.5rem", color: "white" }} />
                     </IconButton>
                 </div>
@@ -54,15 +68,14 @@ export const Navbar = () => {
 
                 <div className=''>
                     <IconButton onClick={() => navigate("/cart")}>
-                        {/* Huy hiệu màu xanh hiện số lượng món trong giỏ */}
-                        <Badge color="primary" badgeContent={cart.cart?.items?.length || 0}>
+                        {/* Huy hiệu hiện tổng số lượng món trong giỏ */}
+                        <Badge color="primary" badgeContent={getCartItemsCount()} max={99}>
                             <ShoppingCartIcon sx={{ fontSize: "1.5rem", color: "white" }} />
                         </Badge>
                     </IconButton>
                 </div>
             </div>
 
-            <SearchModal open={searchOpen} handleClose={() => setSearchOpen(false)} />
         </Box>
     );
 };

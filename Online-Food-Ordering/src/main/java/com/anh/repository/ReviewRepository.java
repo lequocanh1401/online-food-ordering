@@ -7,17 +7,17 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ReviewRepository extends JpaRepository<Review, Long> {
-    List<Review> findByRestaurantIdOrderByCreatedAtDesc(Long restaurantId);
+    List<Review> findByRestaurantIdAndFoodIsNullOrderByCreatedAtDesc(Long restaurantId);
     
     List<Review> findByFoodIdOrderByCreatedAtDesc(Long foodId);
     
-    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.restaurant.id = :restaurantId")
+    @Query("SELECT AVG(r.rating) FROM Review r WHERE r.restaurant.id = :restaurantId AND r.food IS NULL")
     Double getAverageRatingForRestaurant(@Param("restaurantId") Long restaurantId);
     
     @Query("SELECT AVG(r.rating) FROM Review r WHERE r.food.id = :foodId")
     Double getAverageRatingForFood(@Param("foodId") Long foodId);
     
-    @Query("SELECT COUNT(r) FROM Review r WHERE r.restaurant.id = :restaurantId")
+    @Query("SELECT COUNT(r) FROM Review r WHERE r.restaurant.id = :restaurantId AND r.food IS NULL")
     Long getCountForRestaurant(@Param("restaurantId") Long restaurantId);
     
     @Query("SELECT COUNT(r) FROM Review r WHERE r.food.id = :foodId")

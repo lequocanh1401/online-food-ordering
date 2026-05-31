@@ -22,7 +22,7 @@ public class CartItem {
     private Cart cart;
 
     @ManyToOne
-    @JsonIgnoreProperties({"restaurant", "foodCategory", "ingredients"})
+    @JsonIgnoreProperties({"foodCategory", "ingredients"})
     private Food food;
 
     private int quantity;

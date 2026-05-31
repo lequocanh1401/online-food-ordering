@@ -19,6 +19,17 @@ public class PaymentServiceImpl implements PaymentService {
     public PaymentResponse createPaymentLink(Order order) throws StripeException {
         Stripe.apiKey = stripeSecretKey;
 
+        Long amount = order.getTotalPrice() != null && order.getTotalPrice() > 0 ? order.getTotalPrice() : order.getTotalAmount();
+        if (amount == null) {
+            amount = 0L;
+        }
+
+        if (amount <= 0) {
+            PaymentResponse res = new PaymentResponse();
+            res.setPayment_url("http://localhost:5173/payment/success/" + order.getId());
+            return res;
+        }
+
         SessionCreateParams params = SessionCreateParams.builder()
                 .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
                 .setMode(SessionCreateParams.Mode.PAYMENT)
@@ -29,9 +40,8 @@ public class PaymentServiceImpl implements PaymentService {
                 .addLineItem(SessionCreateParams.LineItem.builder()
                         .setQuantity(1L)
                         .setPriceData(SessionCreateParams.LineItem.PriceData.builder()
-                                .setCurrency("usd")
-                                // Nhân 100 vì Stripe tính theo đơn vị Cent
-                                .setUnitAmount(order.getTotalAmount() * 100)
+                                .setCurrency("vnd")
+                                .setUnitAmount(amount)
                                 .setProductData(SessionCreateParams.LineItem.PriceData.ProductData.builder()
                                         .setName("Thanh toan don hang #" + order.getId())
                                         .build())

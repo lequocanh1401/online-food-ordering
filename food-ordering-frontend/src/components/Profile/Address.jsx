@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Card, CardContent, Typography, Box, Divider, TextField, Button, IconButton } from '@mui/material';
+import { Card, CardContent, Typography, Box, Divider, TextField, Button, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import RoomIcon from '@mui/icons-material/Room';
 import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
@@ -19,6 +19,10 @@ export const Address = () => {
 
     // State cho chế độ sửa địa chỉ
     const [editAddressId, setEditAddressId] = useState(null);
+
+    // State cho Dialog xác nhận xóa
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [addressIdToDelete, setAddressIdToDelete] = useState(null);
 
     // State cho Form nhập địa chỉ
     const [formData, setFormData] = useState({
@@ -45,14 +49,24 @@ export const Address = () => {
     };
 
     const handleDeleteClick = (addressId) => {
-        if (window.confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) {
-            if (jwt && addressId) {
-                dispatch(deleteUserAddress({ jwt, addressId }));
-                if (editAddressId === addressId) {
-                    handleCancelEdit();
-                }
+        setAddressIdToDelete(addressId);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (jwt && addressIdToDelete) {
+            dispatch(deleteUserAddress({ jwt, addressId: addressIdToDelete }));
+            if (editAddressId === addressIdToDelete) {
+                handleCancelEdit();
             }
         }
+        setDeleteConfirmOpen(false);
+        setAddressIdToDelete(null);
+    };
+
+    const handleCancelDelete = () => {
+        setDeleteConfirmOpen(false);
+        setAddressIdToDelete(null);
     };
 
     const handleCancelEdit = () => {
@@ -239,6 +253,70 @@ export const Address = () => {
                     </Card>
                 </div>
             </div>
+
+            {/* Dialog xác nhận xóa địa chỉ thiết kế đẹp mắt */}
+            <Dialog
+                open={deleteConfirmOpen}
+                onClose={handleCancelDelete}
+                PaperProps={{
+                    style: {
+                        backgroundColor: '#111827', // Tone màu tối đồng bộ với giao diện
+                        color: '#fff',
+                        borderRadius: '16px',
+                        border: '1px solid #1f2937',
+                        padding: '8px',
+                        maxWidth: '400px',
+                        width: '100%',
+                    },
+                }}
+            >
+                <DialogTitle style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.25rem' }}>
+                    <DeleteIcon style={{ color: '#ef4444' }} />
+                    Xác nhận xóa địa chỉ
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText style={{ color: '#9ca3af', fontSize: '0.95rem', marginTop: '4px' }}>
+                        Bạn có chắc chắn muốn xóa địa chỉ này? Hành động này không thể hoàn tác và sẽ gỡ bỏ địa chỉ khỏi tài khoản của bạn.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions style={{ padding: '16px', gap: '8px' }}>
+                    <Button 
+                        onClick={handleCancelDelete} 
+                        sx={{ 
+                            color: '#9ca3af', 
+                            borderRadius: '8px',
+                            textTransform: 'none',
+                            fontWeight: 'medium',
+                            px: 3,
+                            py: 1,
+                            '&:hover': {
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                color: '#fff'
+                            }
+                        }}
+                    >
+                        Hủy
+                    </Button>
+                    <Button 
+                        onClick={handleConfirmDelete} 
+                        variant="contained" 
+                        sx={{ 
+                            bgcolor: '#ef4444', 
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            borderRadius: '8px',
+                            textTransform: 'none',
+                            px: 3,
+                            py: 1,
+                            '&:hover': { 
+                                bgcolor: '#dc2626' 
+                            } 
+                        }}
+                    >
+                        Xóa
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

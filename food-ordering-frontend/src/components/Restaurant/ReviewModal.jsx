@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
     Dialog, DialogTitle, DialogContent, DialogActions, 
     Button, Rating, TextField, Box, Typography, Alert 
 } from '@mui/material';
 import { useDispatch } from 'react-redux';
-import { createReview } from '../../State/Review/Action';
+import { createReview, updateReview } from '../../State/Review/Action';
 
-export const ReviewModal = ({ open, handleClose, restaurantId, foodId, foodName, onSuccess }) => {
+export const ReviewModal = ({ open, handleClose, restaurantId, foodId, foodName, reviewToEdit, onSuccess }) => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
 
@@ -14,6 +14,18 @@ export const ReviewModal = ({ open, handleClose, restaurantId, foodId, foodName,
     const [comment, setComment] = useState("");
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+
+    // Đồng bộ rating và comment khi mở modal hoặc khi có review cần sửa
+    useEffect(() => {
+        if (reviewToEdit) {
+            setRating(reviewToEdit.rating || 5);
+            setComment(reviewToEdit.comment || "");
+        } else {
+            setRating(5);
+            setComment("");
+        }
+        setError(null);
+    }, [open, reviewToEdit]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,7 +38,11 @@ export const ReviewModal = ({ open, handleClose, restaurantId, foodId, foodName,
         };
 
         try {
-            await dispatch(createReview({ reviewData, jwt, restaurantId, foodId }));
+            if (reviewToEdit) {
+                await dispatch(updateReview({ reviewId: reviewToEdit.id, reviewData, jwt }));
+            } else {
+                await dispatch(createReview({ reviewData, jwt, restaurantId, foodId }));
+            }
             setComment("");
             setRating(5);
             if (onSuccess) onSuccess();
@@ -54,7 +70,7 @@ export const ReviewModal = ({ open, handleClose, restaurantId, foodId, foodName,
             }}
         >
             <DialogTitle sx={{ borderBottom: '1px solid #1f2937', pb: 2 }} className="font-bold">
-                {foodId ? `Đánh Giá Món Ăn: ${foodName}` : 'Đánh Giá & Nhận Xét Nhà Hàng'}
+                {reviewToEdit ? 'Chỉnh sửa đánh giá' : (foodId ? `Đánh Giá Món Ăn: ${foodName}` : 'Đánh Giá & Nhận Xét Nhà Hàng')}
             </DialogTitle>
             
             <form onSubmit={handleSubmit}>
@@ -128,7 +144,7 @@ export const ReviewModal = ({ open, handleClose, restaurantId, foodId, foodName,
                             '&.Mui-disabled': { bgcolor: '#880e4f', color: '#9ca3af' }
                         }}
                     >
-                        {submitting ? "Đang gửi..." : "Gửi đánh giá"}
+                        {submitting ? "Đang gửi..." : (reviewToEdit ? "Cập nhật" : "Gửi đánh giá")}
                     </Button>
                 </DialogActions>
             </form>

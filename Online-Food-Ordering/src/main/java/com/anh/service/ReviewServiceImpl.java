@@ -81,7 +81,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewResponseDto getRestaurantReviews(Long restaurantId) {
-        List<Review> reviews = reviewRepository.findByRestaurantIdOrderByCreatedAtDesc(restaurantId);
+        List<Review> reviews = reviewRepository.findByRestaurantIdAndFoodIsNullOrderByCreatedAtDesc(restaurantId);
         Double avgRating = reviewRepository.getAverageRatingForRestaurant(restaurantId);
         Long count = reviewRepository.getCountForRestaurant(restaurantId);
 
@@ -103,5 +103,34 @@ public class ReviewServiceImpl implements ReviewService {
         dto.setAverageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
         dto.setTotalReviews(count != null ? count.intValue() : 0);
         return dto;
+    }
+
+    @Override
+    public Review updateReview(Long reviewId, Review updatedReview, User user) throws Exception {
+        Optional<Review> reviewOpt = reviewRepository.findById(reviewId);
+        if (reviewOpt.isEmpty()) {
+            throw new Exception("Không tìm thấy đánh giá.");
+        }
+        Review review = reviewOpt.get();
+        if (!review.getCustomer().getId().equals(user.getId())) {
+            throw new Exception("Bạn không có quyền sửa đánh giá của người khác.");
+        }
+        review.setRating(updatedReview.getRating());
+        review.setComment(updatedReview.getComment());
+        review.setCreatedAt(LocalDateTime.now());
+        return reviewRepository.save(review);
+    }
+
+    @Override
+    public void deleteReview(Long reviewId, User user) throws Exception {
+        Optional<Review> reviewOpt = reviewRepository.findById(reviewId);
+        if (reviewOpt.isEmpty()) {
+            throw new Exception("Không tìm thấy đánh giá.");
+        }
+        Review review = reviewOpt.get();
+        if (!review.getCustomer().getId().equals(user.getId())) {
+            throw new Exception("Bạn không có quyền xóa đánh giá của người khác.");
+        }
+        reviewRepository.delete(review);
     }
 }

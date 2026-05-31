@@ -50,6 +50,7 @@ export const addItemToCart = (reqData) => {
             });
             console.log("Đã thêm món vào giỏ hàng thành công:", res.data);
             dispatch({ type: ADD_ITEM_TO_CART_SUCCESS, payload: res.data });
+            dispatch(findUserCart(reqData.jwt)); // Tự động đồng bộ giỏ hàng mới
         } catch (error) {
             console.log("Lỗi thêm vào giỏ hàng:", error);
             dispatch({ type: ADD_ITEM_TO_CART_FAILURE, payload: error.message });
@@ -73,6 +74,7 @@ export const updateCartItem = (reqData) => {
             });
             console.log("Cập nhật số lượng thành công:", res.data);
             dispatch({ type: UPDATE_CARTITEM_SUCCESS, payload: res.data });
+            dispatch(findUserCart(reqData.jwt)); // Tự động đồng bộ giỏ hàng mới
         } catch (error) {
             console.log("Lỗi cập nhật số lượng:", error);
             dispatch({ type: UPDATE_CARTITEM_FAILURE, payload: error.message });
@@ -89,6 +91,7 @@ export const removeCartItem = ({ cartItemId, jwt }) => async (dispatch) => {
         });
         dispatch({ type: REMOVE_CARTITEM_SUCCESS, payload: cartItemId });
         console.log("Xóa món thành công", data);
+        dispatch(findUserCart(jwt)); // Tự động đồng bộ giỏ hàng mới
     } catch (error) {
         dispatch({ type: REMOVE_CARTITEM_FAILURE, payload: error });
     }

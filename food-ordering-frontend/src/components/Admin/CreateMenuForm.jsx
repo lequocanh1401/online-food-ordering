@@ -96,7 +96,7 @@ export const CreateMenuForm = () => {
                         </Grid>
 
                         <Grid item="true" xs={12} lg={6}><TextField fullWidth label="Tên món ăn" name="name" value={formik.values.name} onChange={formik.handleChange} /></Grid>
-                        <Grid item="true" xs={12} lg={6}><TextField fullWidth label="Giá tiền (VNĐ)" name="price" type="number" value={formik.values.price} onChange={formik.handleChange} /></Grid>
+                        <Grid item="true" xs={12} lg={6}><TextField fullWidth label="Giá tiền (VND)" name="price" type="number" value={formik.values.price} onChange={formik.handleChange} /></Grid>
                         <Grid item="true" xs={12}><TextField fullWidth multiline rows={2} label="Mô tả chi tiết" name="description" value={formik.values.description} onChange={formik.handleChange} /></Grid>
 
                         <Grid item="true" xs={12} lg={6}>

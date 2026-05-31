@@ -47,4 +47,31 @@ public class ReviewController {
         ReviewResponseDto response = reviewService.getFoodReviews(foodId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
+    @PutMapping("/{reviewId}")
+    public ResponseEntity<?> updateReview(
+            @PathVariable Long reviewId,
+            @RequestBody Review review,
+            @RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            Review updatedReview = reviewService.updateReview(reviewId, review, user);
+            return new ResponseEntity<>(updatedReview, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
+
+    @DeleteMapping("/{reviewId}")
+    public ResponseEntity<?> deleteReview(
+            @PathVariable Long reviewId,
+            @RequestHeader("Authorization") String jwt) {
+        try {
+            User user = userService.findUserByJwtToken(jwt);
+            reviewService.deleteReview(reviewId, user);
+            return new ResponseEntity<>("Xóa đánh giá thành công", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 }

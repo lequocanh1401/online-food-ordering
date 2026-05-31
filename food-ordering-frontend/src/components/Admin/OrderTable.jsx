@@ -5,10 +5,31 @@ import { fetchRestaurantsOrder, updateOrderStatus } from '../../State/Restaurant
 
 const orderStatusList = [
     { label: "Pending (Đang chờ)", value: "PENDING" },
-    { label: "Completed (Hoàn thành)", value: "COMPLETED" },
     { label: "Out For Delivery (Đang giao)", value: "OUT_FOR_DELIVERY" },
-    { label: "Delivered (Đã giao)", value: "DELIVERED" }
+    { label: "Completed (Hoàn thành)", value: "COMPLETED" }
 ];
+
+const getStatusLabel = (status) => {
+    switch (status) {
+        case "PENDING": return "Chưa thanh toán";
+        case "PAID": return "Đã thanh toán";
+        case "OUT_FOR_DELIVERY": return "Đang giao hàng";
+        case "DELIVERED": return "Đã giao hàng";
+        case "COMPLETED": return "Hoàn thành";
+        default: return status;
+    }
+};
+
+const getStatusClass = (status) => {
+    switch (status) {
+        case "PENDING": return "bg-red-600 text-white";
+        case "PAID": return "bg-indigo-600 text-white";
+        case "OUT_FOR_DELIVERY": return "bg-blue-600 text-white";
+        case "DELIVERED": return "bg-teal-600 text-white";
+        case "COMPLETED": return "bg-green-600 text-white";
+        default: return "bg-gray-600 text-white";
+    }
+};
 
 export const OrderTable = ({ filterValue }) => {
     const dispatch = useDispatch();
@@ -27,11 +48,19 @@ export const OrderTable = ({ filterValue }) => {
         if (restaurant.usersRestaurant?.id) {
             dispatch(fetchRestaurantsOrder({
                 restaurantId: restaurant.usersRestaurant.id,
-                orderStatus: filterValue === "ALL" ? "" : filterValue,
+                orderStatus: "",
                 jwt: jwt
             }));
         }
     }, [dispatch, jwt, restaurant.usersRestaurant?.id, filterValue]);
+
+    const filteredOrders = restaurantOrder.orders?.filter((item) => {
+        if (filterValue === "ALL") return true;
+        if (filterValue === "PENDING") return item.orderStatus === "PENDING" || item.orderStatus === "PAID";
+        if (filterValue === "OUT_FOR_DELIVERY") return item.orderStatus === "OUT_FOR_DELIVERY";
+        if (filterValue === "COMPLETED") return item.orderStatus === "COMPLETED" || item.orderStatus === "DELIVERED";
+        return item.orderStatus === filterValue;
+    }) || [];
 
     const handleUpdateStatusClick = (event, orderId) => {
         setAnchorEl(event.currentTarget);
@@ -66,7 +95,7 @@ export const OrderTable = ({ filterValue }) => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {restaurantOrder.orders?.map((item) => (
+                            {filteredOrders.map((item) => (
                                 <TableRow key={item.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                     <TableCell component="th" scope="row">{item.id}</TableCell>
                                     <TableCell align="right">
@@ -82,8 +111,8 @@ export const OrderTable = ({ filterValue }) => {
                                         {item.items?.map((orderItem) => <p key={orderItem.id}>{orderItem.food?.name}</p>)}
                                     </TableCell>
                                     <TableCell align="right">
-                                        <span className={`px-4 py-2 rounded-full text-sm font-semibold ${item.orderStatus === 'PENDING' ? 'bg-yellow-600 text-white' : 'bg-green-600 text-white'}`}>
-                                            {item.orderStatus}
+                                        <span className={`px-4 py-2 rounded-full text-xs font-semibold ${getStatusClass(item.orderStatus)}`}>
+                                            {getStatusLabel(item.orderStatus)}
                                         </span>
                                     </TableCell>
                                     <TableCell align="right">

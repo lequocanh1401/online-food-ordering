@@ -24,6 +24,8 @@ public class AppConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(Authorize -> Authorize
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/restaurant/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/reviews/food/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/admin/ingredients/**").authenticated()
                         .requestMatchers("/api/admin/**").hasAnyRole("RESTAURANT_OWNER", "ADMIN")
                         .requestMatchers("/api/**").authenticated()

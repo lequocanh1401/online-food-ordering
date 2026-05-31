@@ -10,4 +10,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     // Tìm tất cả các đơn hàng đổ về một nhà hàng cụ thể
     public List<Order> findByRestaurantId(Long restaurantId);
+
+    // Kiểm tra xem địa chỉ có được liên kết với đơn hàng nào không
+    boolean existsByDeliveryAddressId(Long addressId);
 }

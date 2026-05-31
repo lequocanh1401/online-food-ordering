@@ -1,13 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Divider, FormControl, FormControlLabel, Radio, RadioGroup, Typography, Card, Avatar, Chip, Button } from '@mui/material';
+import { Divider, FormControl, FormControlLabel, Radio, RadioGroup, Typography, Card, Avatar, Chip, Button, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { MenuCard } from './MenuCard';
 import { useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRestaurantById, getRestaurantsCategory } from '../../State/Restaurant/Action';
 import { getMenuItemsByRestaurantId } from '../../State/Menu/Action';
-import { getRestaurantReviews } from '../../State/Review/Action';
+import { getRestaurantReviews, deleteReview } from '../../State/Review/Action';
 import { ReviewModal } from './ReviewModal';
 
 const foodTypes = [
@@ -21,15 +23,53 @@ export const RestaurantDetails = () => {
     const [foodType, setFoodType] = useState("all");
     const [foodCategory, setFoodCategory] = useState("");
     const [openReviewModal, setOpenReviewModal] = useState(false);
+    const [selectedReviewToEdit, setSelectedReviewToEdit] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [reviewIdToDelete, setReviewIdToDelete] = useState(null);
 
     // Rút id nhà hàng từ thanh URL (VD: /restaurant/hanoi/zosh/1)
     const { id } = useParams();
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
 
+    const auth = useSelector(store => store.auth);
     const restaurant = useSelector(store => store.restaurant);
     const menu = useSelector(store => store.menu);
     const review = useSelector(store => store.review);
+
+    const handleEditReviewClick = (rev) => {
+        setSelectedReviewToEdit(rev);
+        setOpenReviewModal(true);
+    };
+
+    const handleDeleteReviewClick = (reviewId) => {
+        setReviewIdToDelete(reviewId);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteReview = async () => {
+        if (reviewIdToDelete) {
+            try {
+                await dispatch(deleteReview({ reviewId: reviewIdToDelete, jwt }));
+                dispatch(getRestaurantReviews({ restaurantId: id }));
+                dispatch(getRestaurantById({ jwt, restaurantId: id }));
+            } catch (err) {
+                console.error("Lỗi khi xóa đánh giá:", err);
+            }
+        }
+        setDeleteConfirmOpen(false);
+        setReviewIdToDelete(null);
+    };
+
+    const handleCancelDeleteReview = () => {
+        setDeleteConfirmOpen(false);
+        setReviewIdToDelete(null);
+    };
+
+    const handleCloseReviewModal = () => {
+        setOpenReviewModal(false);
+        setSelectedReviewToEdit(null);
+    };
 
     // Kéo thông tin chi tiết quán + danh mục món ăn + đánh giá
     useEffect(() => {
@@ -159,8 +199,28 @@ export const RestaurantDetails = () => {
                                         </Typography>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20 text-yellow-500 text-sm font-semibold">
-                                    ⭐ {r.rating}
+                                <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-0.5 rounded border border-yellow-500/20 text-yellow-500 text-sm font-semibold">
+                                        ⭐ {r.rating}
+                                    </div>
+                                    {auth.user && r.customer?.id === auth.user.id && (
+                                        <div className="flex gap-0.5">
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => handleEditReviewClick(r)}
+                                                sx={{ color: '#60a5fa', p: 0.5, '&:hover': { bgcolor: 'rgba(96, 165, 250, 0.1)' } }}
+                                            >
+                                                <EditIcon fontSize="small" />
+                                            </IconButton>
+                                            <IconButton 
+                                                size="small" 
+                                                onClick={() => handleDeleteReviewClick(r.id)}
+                                                sx={{ color: '#f87171', p: 0.5, '&:hover': { bgcolor: 'rgba(248, 113, 113, 0.1)' } }}
+                                            >
+                                                <DeleteIcon fontSize="small" />
+                                            </IconButton>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                             {r.food && (
@@ -183,10 +243,78 @@ export const RestaurantDetails = () => {
 
             <ReviewModal 
                 open={openReviewModal} 
-                handleClose={() => setOpenReviewModal(false)} 
+                handleClose={handleCloseReviewModal} 
                 restaurantId={id} 
-                onSuccess={() => dispatch(getRestaurantReviews({ restaurantId: id }))} 
+                reviewToEdit={selectedReviewToEdit}
+                onSuccess={() => {
+                    dispatch(getRestaurantReviews({ restaurantId: id }));
+                    dispatch(getRestaurantById({ jwt, restaurantId: id }));
+                }} 
             />
+
+            {/* Dialog xác nhận xóa đánh giá thiết kế đẹp mắt */}
+            <Dialog
+                open={deleteConfirmOpen}
+                onClose={handleCancelDeleteReview}
+                PaperProps={{
+                    style: {
+                        backgroundColor: '#111827',
+                        color: '#fff',
+                        borderRadius: '16px',
+                        border: '1px solid #1f2937',
+                        padding: '8px',
+                        maxWidth: '400px',
+                        width: '100%',
+                    },
+                }}
+            >
+                <DialogTitle style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.25rem' }}>
+                    <DeleteIcon style={{ color: '#ef4444' }} />
+                    Xác nhận xóa đánh giá
+                </DialogTitle>
+                <DialogContent>
+                    <DialogContentText style={{ color: '#9ca3af', fontSize: '0.95rem', marginTop: '4px' }}>
+                        Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions style={{ padding: '16px', gap: '8px' }}>
+                    <Button 
+                        onClick={handleCancelDeleteReview} 
+                        sx={{ 
+                            color: '#9ca3af', 
+                            borderRadius: '8px',
+                            textTransform: 'none',
+                            fontWeight: 'medium',
+                            px: 3,
+                            py: 1,
+                            '&:hover': {
+                                backgroundColor: 'rgba(255,255,255,0.05)',
+                                color: '#fff'
+                            }
+                        }}
+                    >
+                        Hủy
+                    </Button>
+                    <Button 
+                        onClick={handleConfirmDeleteReview} 
+                        variant="contained" 
+                        sx={{ 
+                            bgcolor: '#ef4444', 
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            borderRadius: '8px',
+                            textTransform: 'none',
+                            px: 3,
+                            py: 1,
+                            '&:hover': { 
+                                bgcolor: '#dc2626' 
+                            } 
+                        }}
+                    >
+                        Xóa
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 };

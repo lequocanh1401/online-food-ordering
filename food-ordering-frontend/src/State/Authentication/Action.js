@@ -135,3 +135,24 @@ export const updateUserAddress = ({ jwt, addressId, addressData }) => async (dis
         console.log("Lỗi cập nhật địa chỉ:", error.response?.data?.message || error.message);
     }
 };
+
+export const socialLogin = ({ provider, token, navigate }) => async (dispatch) => {
+    dispatch({ type: LOGIN_REQUEST });
+    try {
+        const { data } = await axios.post(`${API_URL}/auth/${provider}`, { token });
+        if (data.jwt) localStorage.setItem("jwt", data.jwt);
+
+        if (data.role === "ROLE_RESTAURANT_OWNER") {
+            navigate("/admin/restaurant");
+        } else {
+            navigate("/");
+        }
+        dispatch({ type: LOGIN_SUCCESS, payload: data.jwt });
+        console.log(`Đăng nhập bằng ${provider} thành công`, data);
+    } catch (error) {
+        const errorMessage = error.response?.data?.message || error.message;
+        dispatch({ type: LOGIN_FAILURE, payload: errorMessage });
+        console.log(`Lỗi đăng nhập ${provider}`, errorMessage);
+        alert(`Lỗi đăng nhập qua ${provider}: ` + errorMessage);
+    }
+};

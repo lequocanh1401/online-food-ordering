@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Button, Typography } from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Button, Typography, IconButton, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useDispatch, useSelector } from 'react-redux';
 import { addItemToCart } from '../../State/Cart/Action';
-import { getFoodReviews, getRestaurantReviews } from '../../State/Review/Action';
+import { getFoodReviews, getRestaurantReviews, deleteReview } from '../../State/Review/Action';
 import { ReviewModal } from './ReviewModal';
 
 export const MenuCard = ({ item, restaurantId }) => {
     const dispatch = useDispatch();
     const jwt = localStorage.getItem("jwt");
     const [openReviewModal, setOpenReviewModal] = useState(false);
+    const [selectedReviewToEdit, setSelectedReviewToEdit] = useState(null);
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const [reviewIdToDelete, setReviewIdToDelete] = useState(null);
 
+    const auth = useSelector(store => store.auth);
     const reviewState = useSelector(store => store.review);
     const foodReviewData = reviewState.foodReviews[item.id] || { reviews: [], averageRating: 0, totalReviews: 0 };
 
@@ -19,6 +25,42 @@ export const MenuCard = ({ item, restaurantId }) => {
             dispatch(getFoodReviews({ foodId: item.id }));
         }
     }, [dispatch, item.id]);
+
+    const handleEditReviewClick = (review) => {
+        setSelectedReviewToEdit(review);
+        setOpenReviewModal(true);
+    };
+
+    const handleDeleteReviewClick = (reviewId) => {
+        setReviewIdToDelete(reviewId);
+        setDeleteConfirmOpen(true);
+    };
+
+    const handleConfirmDeleteReview = async () => {
+        if (reviewIdToDelete) {
+            try {
+                await dispatch(deleteReview({ reviewId: reviewIdToDelete, jwt }));
+                dispatch(getFoodReviews({ foodId: item.id }));
+                if (restaurantId) {
+                    dispatch(getRestaurantReviews({ restaurantId }));
+                }
+            } catch (err) {
+                console.error("Lỗi khi xóa đánh giá:", err);
+            }
+        }
+        setDeleteConfirmOpen(false);
+        setReviewIdToDelete(null);
+    };
+
+    const handleCancelDeleteReview = () => {
+        setDeleteConfirmOpen(false);
+        setReviewIdToDelete(null);
+    };
+
+    const handleCloseReviewModal = () => {
+        setOpenReviewModal(false);
+        setSelectedReviewToEdit(null);
+    };
 
     const handleAddItemToCart = (e) => {
         e.preventDefault();
@@ -95,8 +137,39 @@ export const MenuCard = ({ item, restaurantId }) => {
                         {foodReviewData.reviews?.map((r) => (
                             <div key={r.id} className="p-3 bg-gray-900/60 border border-gray-800 rounded-lg text-sm text-white">
                                 <div className="flex justify-between items-start">
-                                    <span className="font-semibold text-gray-300">{r.customer?.fullName}</span>
-                                    <span className="text-yellow-500 font-semibold">⭐ {r.rating}</span>
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold text-gray-300">{r.customer?.fullName}</span>
+                                        <span className="text-gray-500 text-xs mt-0.5">
+                                            {r.createdAt ? new Date(r.createdAt).toLocaleDateString('vi-VN') : ""}
+                                        </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <span className="text-yellow-500 font-semibold mr-1">⭐ {r.rating}</span>
+                                        {auth.user && r.customer?.id === auth.user.id && (
+                                            <div className="flex gap-0.5">
+                                                <IconButton 
+                                                    size="small" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleEditReviewClick(r);
+                                                    }}
+                                                    sx={{ color: '#60a5fa', p: 0.2, '&:hover': { bgcolor: 'rgba(96, 165, 250, 0.1)' } }}
+                                                >
+                                                    <EditIcon fontSize="small" />
+                                                </IconButton>
+                                                <IconButton 
+                                                    size="small" 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteReviewClick(r.id);
+                                                    }}
+                                                    sx={{ color: '#f87171', p: 0.2, '&:hover': { bgcolor: 'rgba(248, 113, 113, 0.1)' } }}
+                                                >
+                                                    <DeleteIcon fontSize="small" />
+                                                </IconButton>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 <p className="text-gray-400 mt-1.5">{r.comment}</p>
                             </div>
@@ -109,10 +182,11 @@ export const MenuCard = ({ item, restaurantId }) => {
 
                 <ReviewModal 
                     open={openReviewModal} 
-                    handleClose={() => setOpenReviewModal(false)} 
+                    handleClose={handleCloseReviewModal} 
                     restaurantId={restaurantId} 
                     foodId={item.id} 
                     foodName={item.name}
+                    reviewToEdit={selectedReviewToEdit}
                     onSuccess={() => {
                         dispatch(getFoodReviews({ foodId: item.id }));
                         if (restaurantId) {
@@ -120,6 +194,70 @@ export const MenuCard = ({ item, restaurantId }) => {
                         }
                     }}
                 />
+
+                {/* Dialog xác nhận xóa đánh giá món ăn thiết kế đẹp mắt */}
+                <Dialog
+                    open={deleteConfirmOpen}
+                    onClose={handleCancelDeleteReview}
+                    PaperProps={{
+                        style: {
+                            backgroundColor: '#111827',
+                            color: '#fff',
+                            borderRadius: '16px',
+                            border: '1px solid #1f2937',
+                            padding: '8px',
+                            maxWidth: '400px',
+                            width: '100%',
+                        },
+                    }}
+                >
+                    <DialogTitle style={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '12px', fontSize: '1.25rem' }}>
+                        <DeleteIcon style={{ color: '#ef4444' }} />
+                        Xác nhận xóa đánh giá
+                    </DialogTitle>
+                    <DialogContent>
+                        <DialogContentText style={{ color: '#9ca3af', fontSize: '0.95rem', marginTop: '4px' }}>
+                            Bạn có chắc chắn muốn xóa đánh giá này? Hành động này không thể hoàn tác.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions style={{ padding: '16px', gap: '8px' }}>
+                        <Button 
+                            onClick={handleCancelDeleteReview} 
+                            sx={{ 
+                                color: '#9ca3af', 
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                fontWeight: 'medium',
+                                px: 3,
+                                py: 1,
+                                '&:hover': {
+                                    backgroundColor: 'rgba(255,255,255,0.05)',
+                                    color: '#fff'
+                                }
+                            }}
+                        >
+                            Hủy
+                        </Button>
+                        <Button 
+                            onClick={handleConfirmDeleteReview} 
+                            variant="contained" 
+                            sx={{ 
+                                bgcolor: '#ef4444', 
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                borderRadius: '8px',
+                                textTransform: 'none',
+                                px: 3,
+                                py: 1,
+                                '&:hover': { 
+                                    bgcolor: '#dc2626' 
+                                } 
+                            }}
+                        >
+                            Xóa
+                        </Button>
+                    </DialogActions>
+                </Dialog>
             </AccordionDetails>
         </Accordion>
     );

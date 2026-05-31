@@ -67,7 +67,7 @@ export const MenuTable = () => {
 
     const handleEditClick = (item) => {
         setEditItemId(item.id);
-        
+
         // Map food's ingredients to the matching reference in ingredients.ingredients so that MUI Select reference comparison works
         const matchedIngredients = (item.ingredients || []).map(ing => {
             const found = ingredients.ingredients?.find(i => i.id === ing.id);
@@ -149,19 +149,19 @@ export const MenuTable = () => {
                                     <TableCell align="right">
                                         {item.ingredients?.map((ing) => ing.name).join(", ")}
                                     </TableCell>
-                                    <TableCell align="right">{item.price}đ</TableCell>
+                                    <TableCell align="right">{item.price} VND</TableCell>
                                     <TableCell align="right">{item.available ? "Có sẵn" : "Hết hàng"}</TableCell>
                                     <TableCell align="right">
                                         <Box className="flex justify-end gap-1">
-                                            <IconButton 
-                                                size="small" 
+                                            <IconButton
+                                                size="small"
                                                 onClick={() => handleEditClick(item)}
                                                 sx={{ color: '#60a5fa', mr: 1, '&:hover': { bgcolor: 'rgba(96, 165, 250, 0.1)' } }}
                                             >
                                                 <EditIcon fontSize="small" />
                                             </IconButton>
-                                            <IconButton 
-                                                size="small" 
+                                            <IconButton
+                                                size="small"
                                                 onClick={() => handleDeleteClick(item.id)}
                                                 sx={{ color: '#f87171', '&:hover': { bgcolor: 'rgba(248, 113, 113, 0.1)' } }}
                                             >
@@ -181,7 +181,7 @@ export const MenuTable = () => {
                     <form onSubmit={handleEditSubmit} className="space-y-4">
                         <h1 className='text-gray-800 font-bold text-center text-xl pb-4'>CẬP NHẬT MÓN ẢN</h1>
                         <TextField fullWidth label="Tên món ăn" name="name" value={editForm.name} onChange={handleEditChange} required />
-                        <TextField fullWidth label="Giá tiền (VNĐ)" name="price" type="number" value={editForm.price} onChange={handleEditChange} required />
+                        <TextField fullWidth label="Giá tiền (VND)" name="price" type="number" value={editForm.price} onChange={handleEditChange} required />
                         <TextField fullWidth multiline rows={2} label="Mô tả chi tiết" name="description" value={editForm.description} onChange={handleEditChange} required />
                         <TextField fullWidth label="Link ảnh món ăn" name="image" value={editForm.image} onChange={handleEditChange} />
 
@@ -237,8 +237,8 @@ export const MenuTable = () => {
             </Modal>
 
             {/* Custom confirm delete Dialog */}
-            <Dialog 
-                open={confirmOpen} 
+            <Dialog
+                open={confirmOpen}
                 onClose={() => setConfirmOpen(false)}
                 PaperProps={{
                     sx: {
@@ -259,15 +259,15 @@ export const MenuTable = () => {
                     </DialogContentText>
                 </DialogContent>
                 <DialogActions sx={{ px: 3, pb: 2 }}>
-                    <Button 
-                        onClick={() => setConfirmOpen(false)} 
+                    <Button
+                        onClick={() => setConfirmOpen(false)}
                         sx={{ color: '#9ca3af', '&:hover': { bgcolor: 'rgba(156, 163, 175, 0.1)' } }}
                     >
                         Hủy bỏ
                     </Button>
-                    <Button 
-                        onClick={handleConfirmDelete} 
-                        variant="contained" 
+                    <Button
+                        onClick={handleConfirmDelete}
+                        variant="contained"
                         color="error"
                         sx={{ borderRadius: '6px', fontWeight: 'bold' }}
                     >

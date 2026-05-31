@@ -10,4 +10,8 @@ public interface ReviewService {
     ReviewResponseDto getRestaurantReviews(Long restaurantId);
     
     ReviewResponseDto getFoodReviews(Long foodId);
+
+    Review updateReview(Long reviewId, Review updatedReview, User user) throws Exception;
+
+    void deleteReview(Long reviewId, User user) throws Exception;
 }

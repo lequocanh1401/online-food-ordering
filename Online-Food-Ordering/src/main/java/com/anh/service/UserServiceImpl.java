@@ -4,6 +4,7 @@ import com.anh.config.JwtProvider;
 import com.anh.model.Address;
 import com.anh.model.User;
 import com.anh.repository.AddressRepository;
+import com.anh.repository.OrderRepository;
 import com.anh.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private AddressRepository addressRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Autowired
     private JwtProvider jwtProvider;
@@ -66,7 +70,14 @@ public class UserServiceImpl implements UserService {
         }
         if (addressToRemove != null) {
             user.getAddresses().remove(addressToRemove);
-            return userRepository.save(user);
+            User savedUser = userRepository.save(user);
+            
+            // Xóa địa chỉ khỏi database nếu địa chỉ này chưa từng được liên kết với đơn hàng nào
+            boolean isReferencedByOrder = orderRepository.existsByDeliveryAddressId(addressId);
+            if (!isReferencedByOrder) {
+                addressRepository.delete(addressToRemove);
+            }
+            return savedUser;
         } else {
             throw new Exception("Address not found or does not belong to this user");
         }

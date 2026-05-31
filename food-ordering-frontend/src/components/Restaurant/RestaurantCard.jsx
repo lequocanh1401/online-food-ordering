@@ -67,6 +67,9 @@ export const RestaurantCard = ({ item }) => {
                     <div className='space-y-1 cursor-pointer' onClick={handleNavigateToRestaurant}>
                         <h1 className='font-semibold text-lg text-gray-100 truncate w-[12rem]'>{name}</h1>
                         <p className='text-gray-400 text-sm truncate w-[14rem]'>{item.description || "Món ăn thơm ngon, chuẩn vị sạch sẽ!"}</p>
+                        <div className="flex items-center gap-1 text-xs text-yellow-500 font-semibold mt-1">
+                            <span>⭐ {item.totalReviews > 0 ? `${item.averageRating} (${item.totalReviews} đánh giá)` : "Chưa có đánh giá"}</span>
+                        </div>
                     </div>
                     <div>
                         <IconButton onClick={handleToggleFavorite}>
